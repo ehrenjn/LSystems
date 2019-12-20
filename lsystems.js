@@ -1,8 +1,9 @@
 //DOESNT LOOK LIKE THE BOT?
 //NEED TO GET LINES TO ACTUALLY GO OFF EDGE, THEN LIFT PEN AND START AGAIN ON THE OTHER SIDE FROM 0
+    //MIGHT WANNA TURN MOVEMENTS INTO AN ACTUAL OBJECT AND MAKE ALL PEN MOVEMENT HAPPEN AS A METHOD OF THAT OBJECT
 //NEED TO SMOOTH LINES BY ONLY DRAWING FULL STRAIGHT LINES (no intermediate steps)
     //gets annoying because of wall hits
-    //IF I DRAW LINES LIKE THIS THEN DOING A SLOW FADE OUT WILL BE HARD WITH DIFFERENT SIZED LINED...
+    //IF I DRAW LINES LIKE THIS THEN DOING A SLOW FADE OUT WILL BE HARD WITH DIFFERENT SIZED LINES...
         //but you could just shrink the line instead of fading it completely I guess? idk
             //eg instead of drawing a full F movement at a time it would be part of an F movement
     //OK TURNS OUT 45 DEGREE LINES JUST LOOK FRICKED BECAUSE IM NOT FULL SCREEN BUT OTHER LINES STILL LOOK FRICKED 
@@ -36,7 +37,6 @@ function LSystem(seed, rules, angle) {
     this.grow = maxLen => {
         let grownString = this.string;
         while (grownString.length < maxLen) {
-            console.log(grownString);
             this.string = grownString; //only update this.string when we know the grown string is below max length
             grownString = "";
             for (let char of this.string) {
@@ -49,6 +49,74 @@ function LSystem(seed, rules, angle) {
         }
     }
 
+
+    this.getNextPenMovement = (x, y, angle, distance) => {
+        let sinAngle = Math.sin(angle);
+        let cosAngle = Math.cos(angle);
+        let newX = x + cosAngle * distance;
+        let newY = y + sinAngle * distance;
+        let tooLeft = newX < 0;
+        let tooRight = newX > CANVAS.width;
+        let tooUp = newY < 0;
+        let tooDown = newY > CANVAS.height;
+        let possibleMovements = [{
+            x: newX,
+            y: newY,
+            length: distance,
+            moveToX: undefined,
+            moveToY: undefined
+        }];
+
+        let distUntilOutOfBounds;
+        if (tooRight || tooLeft) {
+            let moveToX;
+            if (tooRight) {
+                distUntilOutOfBounds = (CANVAS.width - x) / cosAngle;
+                moveToX = 0;
+            } else if (tooLeft) {
+                distUntilOutOfBounds = (-x) / cosAngle;
+                moveToX = CANVAS.width;
+            }
+            newX = x + cosAngle * distUntilOutOfBounds;
+            newY = y + sinAngle * distUntilOutOfBounds;
+            possibleMovements.push({
+                x: newX,
+                y: newY,
+                length: distUntilOutOfBounds,
+                moveToX: moveToX,
+                moveToY: newY
+            });
+        }
+        if (tooDown || tooUp) {
+            let moveToY;
+            if (tooDown) {
+                distUntilOutOfBounds = (CANVAS.height - y) / sinAngle;
+                moveToY = 0;
+            } else if (tooUp) {
+                distUntilOutOfBounds = (-y) / sinAngle;
+                moveToY = CANVAS.height;
+            }
+            newX = x + cosAngle * distUntilOutOfBounds;
+            newY = y + sinAngle * distUntilOutOfBounds;
+            possibleMovements.push({
+                x: x + cosAngle * distUntilOutOfBounds,
+                y: y + sinAngle * distUntilOutOfBounds,
+                length: distUntilOutOfBounds,
+                moveToX: newX,
+                moveToY: moveToY
+            });
+        }
+
+        let shortestMovement = possibleMovements[0];
+        for (let movement of possibleMovements) {
+            if (movement.length < shortestMovement.length) {
+                shortestMovement = movement;
+            }
+        }
+        return shortestMovement;
+    }
+
+
     this.draw = (startX, startY, initialAngle) => {
         let currentAngle = initialAngle || 0;
         let [x, y] = [startX, startY];
@@ -58,25 +126,17 @@ function LSystem(seed, rules, angle) {
         for (let char of this.string) {
             switch (char) {
                 case 'F':
-                    let deltaX = Math.cos(currentAngle) * DISTANCE_PER_MOVEMENT;
-                    let deltaY = Math.sin(currentAngle) * DISTANCE_PER_MOVEMENT;
-                    /*let newX = x + deltaX;
-                    let newY = y + deltaY;
-                    if (newX >= CANVAS.width || newX < 0) {
-                        deltaX = -deltaX;
+                    let distanceRemaining = DISTANCE_PER_MOVEMENT;
+                    let nextMovement = this.getNextPenMovement(x, y, currentAngle, distanceRemaining);
+                    while (nextMovement.length < distanceRemaining) {
+                        CONTEXT.lineTo(nextMovement.x, nextMovement.y);
+                        CONTEXT.moveTo(nextMovement.moveToX, nextMovement.moveToY);
+                        [x, y] = [nextMovement.moveToX, nextMovement.moveToY];
+                        distanceRemaining -= nextMovement.length;
+                        nextMovement = this.getNextPenMovement(x, y, currentAngle, distanceRemaining);
                     }
-                    if (newY >= CANVAS.height || newY < 0) {
-                        deltaY = -deltaY;
-                    }
-                    x += deltaX;
-                    y += deltaY;
-                    currentAngle = Math.atan(deltaX/deltaY);*/
-                    //CONTEXT.lineTo(x, y);
-                    x = (x + deltaX) % CANVAS.width;
-                    y = (y + deltaY) % CANVAS.height;
-                    if (x < 0) x += CANVAS.width;
-                    if (y < 0) y += CANVAS.height;
-                    CONTEXT.lineTo(x, y);
+                    CONTEXT.lineTo(nextMovement.x, nextMovement.y);
+                    [x, y] = [nextMovement.x, nextMovement.y];
                     break;
                 case '+':
                     currentAngle += this.angle;
@@ -95,6 +155,7 @@ function LSystem(seed, rules, angle) {
                     let position = positionStack.pop();
                     x = position.x;
                     y = position.y;
+                    CONTEXT.moveTo(x, y);
                     currentAngle = position.angle;
                     break;
             }
@@ -103,8 +164,15 @@ function LSystem(seed, rules, angle) {
     }
 }
 
+
+function degreeToRad(degree) {
+    return degree * (PI / 180);
+}
+
 //let sys = new LSystem("T", {"F":"FFFFF-","T":"[]FFFTF"}, PI / 4);
-let sys = new LSystem("+F", {"F":"FF"}, PI / 4);
+//let sys = new LSystem("FF", {"F":"FQ+FB","G":"[W]F","X":"W+XQ+--Q+","W":"QG","Q":"G[W]W"}, degreeToRad(60))
+let sys = new LSystem("FLLL", {"F":"FF-L+L","L":"+L[F+F]+L"}, degreeToRad(60));
+//let sys = new LSystem("+F", {"F":"FF"}, PI / 4);
 sys.grow(1000);
 console.log(sys.string);
-sys.draw(100, 100)
+sys.draw(0, 0)
