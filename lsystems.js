@@ -13,6 +13,16 @@
     //dont wanna ruin it on full screen though... maybe check how it looks once you finish the smoothing
 //LOOK INTO Path2D FOR KEEPING TRACK OF PATHS (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
 
+//GOD DAMN IT, WHEN IM MAKING SURE STRINGS CONTAIN AN F I LET IT REPLACE ANY CHAR WITH F INCLUDING [ AND ]
+    //CANT JUST TELL IT TO NOT REPLACE THOSE BECAUSE ITS POSSIBLE TO GET RULES THAT ONLY HAVE [ AND ]
+    //might wanna refactor all the generation but dunno where to start
+    //SIMPLEST SOLUTION: WHEN ADDING F TO SOMEWHERE JUST TAKE OFF THE FIRST CHAR OF THE STRING, IF IT WAS "[" THEN ALSO TAKE OUT THE FIRST "]", THEN SPRINKLE IN EITHER 1 OR 2 F'S RANDOMLY DEPENDING ON HOW MANY CHARS YOU GOT RID OF
+        //OR just add a new f without removing anything or always only add in 1 f if you dont really care about it being "perfect"
+
+//STILL GOTTA TEST SQUARE BRACKET REPLACEMENT
+//REPLACING THE SQUARE BRACKETS ARE MESSING UP THE RULE FROMS
+    //AT THIS POINT JUST REWRITE THE RANDOM L SYSTEM STRING GENERATION AND HOPEFULLY GET RID OF THAT "HACK" LINE (but maybe youll still need it, whatever)
+
 
 "use strict";
 
@@ -26,6 +36,30 @@ CANVAS.height = screen.height * 4;
 CONTEXT.lineWidth = 8;
 CONTEXT.strokeStyle = "white";
 
+//consts for randomly generating lsystems
+const MIN_RULES = 2;
+const MAX_RULES = 5;
+const MIN_START_LENGTH = 1;
+const MAX_START_LENGTH = 5;
+const MIN_RULE_LENGTH = 2;
+const MAX_RULE_LENGTH = 5;
+const NON_RANDOM_ANGLES = [20, 30, 36, 45, 60, 90, 135];
+const RANDOM_ANGLE_CHANCE = 0.5;
+const MAX_ANGLE = 179;
+const MIN_ANGLE = 5;
+const POSSIBLE_CHARS = ['F', '+', '-', '[', 'A', 'B']
+const LSYSTEM_MAX_LENGTH = 2000;
+
+
+
+function randomColor() {
+    let color = '#';
+    for (var i = 0; i < 6; i++) {
+        let newDigit = Math.floor(Math.random() * 16);
+        color += newDigit.toString(16);
+    }
+    return color;
+}
 
 
 function LSystem(seed, rules, angle) {
@@ -37,6 +71,7 @@ function LSystem(seed, rules, angle) {
     this.grow = maxLen => {
         let grownString = this.string;
         while (grownString.length < maxLen) {
+            //console.log(grownString);
             this.string = grownString; //only update this.string when we know the grown string is below max length
             grownString = "";
             for (let char of this.string) {
@@ -45,6 +80,9 @@ function LSystem(seed, rules, angle) {
                 } else {
                     grownString = grownString.concat(char);
                 }
+            }
+            if (grownString == this.string) {
+                break; //HACK TO FIX ISSUE WITH RULES RUNNING FOREVER 
             }
         }
     }
@@ -121,6 +159,7 @@ function LSystem(seed, rules, angle) {
         let currentAngle = initialAngle || 0;
         let [x, y] = [startX, startY];
         let positionStack = [];
+        CONTEXT.strokeStyle = randomColor();
         CONTEXT.beginPath();
         CONTEXT.moveTo(startX, startY);
         for (let char of this.string) {
@@ -161,6 +200,7 @@ function LSystem(seed, rules, angle) {
             }
         }
         CONTEXT.stroke();
+        return [x, y];
     }
 }
 
@@ -169,10 +209,157 @@ function degreeToRad(degree) {
     return degree * (PI / 180);
 }
 
-//let sys = new LSystem("T", {"F":"FFFFF-","T":"[]FFFTF"}, PI / 4);
-//let sys = new LSystem("FF", {"F":"FQ+FB","G":"[W]F","X":"W+XQ+--Q+","W":"QG","Q":"G[W]W"}, degreeToRad(60))
-let sys = new LSystem("FLLL", {"F":"FF-L+L","L":"+L[F+F]+L"}, degreeToRad(60));
-//let sys = new LSystem("+F", {"F":"FF"}, PI / 4);
-sys.grow(1000);
-console.log(sys.string);
-sys.draw(0, 0)
+function randInt(min, max) {
+    let valueRange = max - min + 1; // +1 to be inclusive
+    return Math.floor(Math.random() * valueRange) + min;
+}
+
+function randChoice(ary) {
+    return ary[Math.floor(Math.random() * ary.length)];
+}
+
+function chance(percentage) {
+    return Math.random() < percentage;
+}
+
+function randLSystemString(length, usedCharsSet) {
+    let string = "";
+    let closingBracketLocations = new Set();
+    for (let char = 0; char < length; char ++) {
+        let newChar = randChoice(POSSIBLE_CHARS);
+        //console.log(char, string, closingBracketLocations, newChar);
+        if (closingBracketLocations.has(char)) {
+            newChar = ']';
+        }
+        else if (newChar == '[') {
+            if (closingBracketLocations.size >= length - char - 1) { // dont do anything if no more room in string
+                char --;
+                continue;
+            } else {
+                let newClosingBracketLocation;
+                do {
+                    newClosingBracketLocation = randInt(char + 1, length - 1);
+                } while (closingBracketLocations.has(newClosingBracketLocation));
+                closingBracketLocations.add(newClosingBracketLocation);
+                newChar = '['
+            }
+        }
+        if (newChar != '[' && newChar != ']') {
+            usedCharsSet.add(newChar);
+        }
+        string += newChar;
+    }
+    return string;
+}
+
+
+function randomLSystem() {
+    console.log("starting rand sys")
+    let usedChars = new Set();
+
+    let num_start_chars = randInt(MIN_START_LENGTH, MAX_START_LENGTH);
+    let start = randLSystemString(num_start_chars, usedChars);
+
+    let angle;
+    if (chance(RANDOM_ANGLE_CHANCE)) {
+        angle = randInt(MIN_ANGLE, MAX_ANGLE);
+    } else {
+        angle = randChoice(NON_RANDOM_ANGLES);
+    }
+    angle = degreeToRad(angle);
+
+    let rules = {};
+    let numRules = randInt(MIN_RULES, MAX_RULES);
+    for (let rule = 0; rule < numRules; rule ++) {
+        let ruleLength = randInt(MIN_RULE_LENGTH, MAX_RULE_LENGTH);
+        let ruleFrom = randChoice(Array.from(usedChars));
+        let ruleTo = randLSystemString(ruleLength, usedChars);
+        rules[ruleFrom] = ruleTo;
+    }
+
+    // make sure rules have at least one F
+    let hasF = false;
+    for (let ruleTo in Object.values(rules)) {
+        if (ruleTo.search('F') != -1) {
+            hasF = true;
+            break;
+        }
+    }
+    if (!hasF) {
+        let [randRuleFrom, randRuleTo] = randChoice(Object.entries(rules));
+        let numFs = 1;
+        if (randRuleTo.charAt(0) == "[") {
+            numFs = 2;
+            randRuleTo = randRuleTo.replace(']', '');
+        }
+        randRuleTo = randRuleTo.substr(1);
+        for (; numFs > 0; numFs --) {
+            let randIndex = randInt(0, randRuleTo.length - 1);
+            randRuleTo = randRuleTo.substring(0, randIndex) + "F" + 
+                randRuleTo.substring(randIndex, randRuleTo.length);
+        }
+        rules[randRuleFrom] = randRuleTo;
+    }
+
+    console.log("NEW SYS: ", start, rules)
+    return new LSystem(start, rules, angle);
+}
+
+
+function* turtleMoveGenerator() {
+    let currentString = "";
+    while (true) {
+        let lsys = randomLSystem();
+        lsys.grow(LSYSTEM_MAX_LENGTH);
+        let currentStringPosition = 0;
+        while (currentStringPosition < lsys.string.length) {
+            let currentSubString = lsys.string.substr(currentStringPosition);
+            let nextFPosition = currentSubString.search('F');
+            let foundF = nextFPosition == -1;
+            if (! foundF) {
+                nextFPosition = lsys.string.length - 1;
+            }
+            currentString += lsys.string.substring(currentStringPosition, nextFPosition);
+            if (foundF) {
+                yield currentString;
+                currentString = "";
+            }
+            currentStringPosition += 1;
+        }
+    }
+}
+
+
+function sleep(ms) {
+    return new Promise(callback => {
+        setTimeout(callback, ms)
+    });
+}
+
+
+function fadeCanvas() {
+    CONTEXT.fillStyle = "rgba(0, 0, 0, 0.1)";
+    CONTEXT.fillRect(0, 0, CANVAS.width, CANVAS.height);
+}
+
+
+
+let systems = [
+    //new LSystem("T", {"F":"FFFFF-","T":"[]FFFTF"}, PI / 4),
+    //new LSystem("FF", {"F":"FQ+FB","G":"[W]F","X":"W+XQ+--Q+","W":"QG","Q":"G[W]W"}, degreeToRad(60)),
+    //new LSystem("FLLL", {"F":"FF-L+L","L":"+L[F+F]+L"}, degreeToRad(45)),
+    randomLSystem(),
+    randomLSystem(),
+    randomLSystem(),
+    randomLSystem(),
+    randomLSystem()
+]
+
+let [x, y] = [0, 0];
+for (let sys of systems) {
+    //sys.grow(10000);
+    sys.grow(LSYSTEM_MAX_LENGTH);
+    [x, y] = sys.draw(x, y);
+}
+
+setInterval(fadeCanvas, 100);
