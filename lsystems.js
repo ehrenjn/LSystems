@@ -23,6 +23,13 @@
 //REPLACING THE SQUARE BRACKETS ARE MESSING UP THE RULE FROMS
     //AT THIS POINT JUST REWRITE THE RANDOM L SYSTEM STRING GENERATION AND HOPEFULLY GET RID OF THAT "HACK" LINE (but maybe youll still need it, whatever)
 
+//STRAIGHT LINES DONT LOOK SO GREAT, TRY TO FIGURE OUT A WAY TO REDUCE THOSE
+    //ALSO WANNA TRY TO GET RID OF THE ONES THAT DONT DO ANYTHING
+//WOULD IT BE POSSIBLE TO MAKE THE LSYSTEMS THEMSELVES HAVE A COLOR SWITCH INSTRUCTION? 
+    //would be annoying because I'd probably want a color stack... but maybe just having an instruction to switch to a complementry color or something would work?
+//SHOULD MAKE A MENU YOU CAN ACCESS WITH THE MOUSE
+//SHOULD MAKE COLORS HAVE A MINIMUM BRIGHTNESS (like 200 or something idk)
+
 
 "use strict";
 
@@ -50,16 +57,11 @@ const MIN_ANGLE = 5;
 const POSSIBLE_CHARS = ['F', '+', '-', '[', 'A', 'B']
 const LSYSTEM_MAX_LENGTH = 2000;
 
+//drawing
+const MS_PER_TURTLE_MOVE = 10;
+const FS_PER_TURTLE_MOVE = 50; //number of "F" commands per turtle move
+const FADE_TIME_MS = 100;
 
-
-function randomColor() {
-    let color = '#';
-    for (var i = 0; i < 6; i++) {
-        let newDigit = Math.floor(Math.random() * 16);
-        color += newDigit.toString(16);
-    }
-    return color;
-}
 
 
 function LSystem(seed, rules, angle) {
@@ -205,6 +207,14 @@ function LSystem(seed, rules, angle) {
 }
 
 
+function TurtleState(x, y, angle, positionStack) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.positionStack = positionStack;
+}
+
+
 function degreeToRad(degree) {
     return degree * (PI / 180);
 }
@@ -218,9 +228,23 @@ function randChoice(ary) {
     return ary[Math.floor(Math.random() * ary.length)];
 }
 
+function randomColor() {
+    let color;
+    do {
+        color = "#"
+        for (var i = 0; i < 6; i++) {
+            let newDigit = randInt(0, 15);
+            color += newDigit.toString(16);
+        }
+    } while (color.match(/#(([abcdef].....)|(..[abcdef]...)|(....[abcdef].))/) === null); //make sure color is bright
+    console.log(color)
+    return color;
+}
+
 function chance(percentage) {
     return Math.random() < percentage;
 }
+
 
 function randLSystemString(length, usedCharsSet) {
     let string = "";
@@ -307,24 +331,30 @@ function randomLSystem() {
 
 
 function* turtleMoveGenerator() {
-    let currentString = "";
+    let currentStrings = [];
+    let numFs = 0;
     while (true) {
         let lsys = randomLSystem();
         lsys.grow(LSYSTEM_MAX_LENGTH);
         let currentStringPosition = 0;
         while (currentStringPosition < lsys.string.length) {
-            let currentSubString = lsys.string.substr(currentStringPosition);
-            let nextFPosition = currentSubString.search('F');
-            let foundF = nextFPosition == -1;
+            let nextFPosition = lsys.string.indexOf('F', currentStringPosition);
+            let foundF = nextFPosition != -1;
             if (! foundF) {
                 nextFPosition = lsys.string.length - 1;
+            } else {
+                numFs ++;
             }
-            currentString += lsys.string.substring(currentStringPosition, nextFPosition);
-            if (foundF) {
-                yield currentString;
-                currentString = "";
+            currentStrings.push({
+                string: lsys.string.substring(currentStringPosition, nextFPosition + 1),
+                lsystem: lsys
+            });
+            if (numFs >= FS_PER_TURTLE_MOVE) {
+                yield currentStrings;
+                currentStrings = [];
+                numFs = 0;
             }
-            currentStringPosition += 1;
+            currentStringPosition = nextFPosition + 1;
         }
     }
 }
@@ -337,13 +367,145 @@ function sleep(ms) {
 }
 
 
+function getNextPenMovement(x, y, angle, distance) {
+    let sinAngle = Math.sin(angle);
+    let cosAngle = Math.cos(angle);
+    let newX = x + cosAngle * distance;
+    let newY = y + sinAngle * distance;
+    let tooLeft = newX < 0;
+    let tooRight = newX > CANVAS.width;
+    let tooUp = newY < 0;
+    let tooDown = newY > CANVAS.height;
+    let possibleMovements = [{
+        x: newX,
+        y: newY,
+        length: distance,
+        moveToX: undefined,
+        moveToY: undefined
+    }];
+
+    let distUntilOutOfBounds;
+    if (tooRight || tooLeft) {
+        let moveToX;
+        if (tooRight) {
+            distUntilOutOfBounds = (CANVAS.width - x) / cosAngle;
+            moveToX = 0;
+        } else if (tooLeft) {
+            distUntilOutOfBounds = (-x) / cosAngle;
+            moveToX = CANVAS.width;
+        }
+        newX = x + cosAngle * distUntilOutOfBounds;
+        newY = y + sinAngle * distUntilOutOfBounds;
+        possibleMovements.push({
+            x: newX,
+            y: newY,
+            length: distUntilOutOfBounds,
+            moveToX: moveToX,
+            moveToY: newY
+        });
+    }
+    if (tooDown || tooUp) {
+        let moveToY;
+        if (tooDown) {
+            distUntilOutOfBounds = (CANVAS.height - y) / sinAngle;
+            moveToY = 0;
+        } else if (tooUp) {
+            distUntilOutOfBounds = (-y) / sinAngle;
+            moveToY = CANVAS.height;
+        }
+        newX = x + cosAngle * distUntilOutOfBounds;
+        newY = y + sinAngle * distUntilOutOfBounds;
+        possibleMovements.push({
+            x: x + cosAngle * distUntilOutOfBounds,
+            y: y + sinAngle * distUntilOutOfBounds,
+            length: distUntilOutOfBounds,
+            moveToX: newX,
+            moveToY: moveToY
+        });
+    }
+
+    let shortestMovement = possibleMovements[0];
+    for (let movement of possibleMovements) {
+        if (movement.length < shortestMovement.length) {
+            shortestMovement = movement;
+        }
+    }
+    return shortestMovement;
+}
+
+
+function drawLSystemSubString(string, turnAngle, initialTurtleState) {
+    let currentAngle = initialTurtleState.angle;
+    let positionStack = initialTurtleState.positionStack;
+    let x = initialTurtleState.x, y = initialTurtleState.y;
+    CONTEXT.beginPath();
+    CONTEXT.moveTo(x, y);
+    for (let char of string) {
+        switch (char) {
+            case 'F':
+                let distanceRemaining = DISTANCE_PER_MOVEMENT;
+                let nextMovement = getNextPenMovement(x, y, currentAngle, distanceRemaining);
+                while (nextMovement.length < distanceRemaining) {
+                    CONTEXT.lineTo(nextMovement.x, nextMovement.y);
+                    CONTEXT.moveTo(nextMovement.moveToX, nextMovement.moveToY);
+                    x = nextMovement.moveToX, y = nextMovement.moveToY;
+                    distanceRemaining -= nextMovement.length;
+                    nextMovement = getNextPenMovement(x, y, currentAngle, distanceRemaining);
+                }
+                CONTEXT.lineTo(nextMovement.x, nextMovement.y);
+                x = nextMovement.x, y = nextMovement.y;
+                break;
+            case '+':
+                currentAngle += turnAngle;
+                break;
+            case '-':
+                currentAngle -= turnAngle;
+                break;
+            case '[':
+                positionStack.push({
+                    x: x,
+                    y: y,
+                    angle: currentAngle
+                });
+                break;
+            case ']':
+                let position = positionStack.pop();
+                x = position.x;
+                y = position.y;
+                CONTEXT.moveTo(x, y);
+                currentAngle = position.angle;
+                break;
+        }
+    }
+    CONTEXT.stroke();
+    return new TurtleState(x, y, currentAngle, positionStack);
+}
+
+
+async function drawRandomLSystemPath() {
+    let moveGenerator = turtleMoveGenerator();
+    let currentTurtleState = new TurtleState(0, 0, 0, []);
+    let currentLSystem;
+    for (let instructions of moveGenerator) {
+        for (let {string: string, lsystem: lsystem} of instructions) {
+            if (lsystem != currentLSystem) {
+                CONTEXT.strokeStyle = randomColor();
+                currentLSystem = lsystem;
+            }
+            currentTurtleState = drawLSystemSubString(string, lsystem.angle, currentTurtleState);
+        }
+        await sleep(MS_PER_TURTLE_MOVE);
+    }
+}
+
+
 function fadeCanvas() {
     CONTEXT.fillStyle = "rgba(0, 0, 0, 0.1)";
     CONTEXT.fillRect(0, 0, CANVAS.width, CANVAS.height);
 }
 
 
-
+/*
 let systems = [
     //new LSystem("T", {"F":"FFFFF-","T":"[]FFFTF"}, PI / 4),
     //new LSystem("FF", {"F":"FQ+FB","G":"[W]F","X":"W+XQ+--Q+","W":"QG","Q":"G[W]W"}, degreeToRad(60)),
@@ -355,11 +517,13 @@ let systems = [
     randomLSystem()
 ]
 
-let [x, y] = [0, 0];
+let x = 0, y = 0;
 for (let sys of systems) {
     //sys.grow(10000);
     sys.grow(LSYSTEM_MAX_LENGTH);
     [x, y] = sys.draw(x, y);
 }
+*/
 
-setInterval(fadeCanvas, 100);
+drawRandomLSystemPath();
+setInterval(fadeCanvas, FADE_TIME_MS);
