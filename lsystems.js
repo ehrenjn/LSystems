@@ -1,4 +1,3 @@
-//DOESNT LOOK LIKE THE BOT?
 //NEED TO GET LINES TO ACTUALLY GO OFF EDGE, THEN LIFT PEN AND START AGAIN ON THE OTHER SIDE FROM 0
     //MIGHT WANNA TURN MOVEMENTS INTO AN ACTUAL OBJECT AND MAKE ALL PEN MOVEMENT HAPPEN AS A METHOD OF THAT OBJECT
 //NEED TO SMOOTH LINES BY ONLY DRAWING FULL STRAIGHT LINES (no intermediate steps)
@@ -29,6 +28,7 @@
     //would be annoying because I'd probably want a color stack... but maybe just having an instruction to switch to a complementry color or something would work?
 //SHOULD MAKE A MENU YOU CAN ACCESS WITH THE MOUSE
 //SHOULD MAKE COLORS HAVE A MINIMUM BRIGHTNESS (like 200 or something idk)
+//MIGHT WANNA MAKE IT SO YOU DONT HAVE TO FULLSCREEN (a border would be kinda ugly though, try to find a better way)
 
 
 "use strict";
@@ -87,122 +87,6 @@ function LSystem(seed, rules, angle) {
                 break; //HACK TO FIX ISSUE WITH RULES RUNNING FOREVER 
             }
         }
-    }
-
-
-    this.getNextPenMovement = (x, y, angle, distance) => {
-        let sinAngle = Math.sin(angle);
-        let cosAngle = Math.cos(angle);
-        let newX = x + cosAngle * distance;
-        let newY = y + sinAngle * distance;
-        let tooLeft = newX < 0;
-        let tooRight = newX > CANVAS.width;
-        let tooUp = newY < 0;
-        let tooDown = newY > CANVAS.height;
-        let possibleMovements = [{
-            x: newX,
-            y: newY,
-            length: distance,
-            moveToX: undefined,
-            moveToY: undefined
-        }];
-
-        let distUntilOutOfBounds;
-        if (tooRight || tooLeft) {
-            let moveToX;
-            if (tooRight) {
-                distUntilOutOfBounds = (CANVAS.width - x) / cosAngle;
-                moveToX = 0;
-            } else if (tooLeft) {
-                distUntilOutOfBounds = (-x) / cosAngle;
-                moveToX = CANVAS.width;
-            }
-            newX = x + cosAngle * distUntilOutOfBounds;
-            newY = y + sinAngle * distUntilOutOfBounds;
-            possibleMovements.push({
-                x: newX,
-                y: newY,
-                length: distUntilOutOfBounds,
-                moveToX: moveToX,
-                moveToY: newY
-            });
-        }
-        if (tooDown || tooUp) {
-            let moveToY;
-            if (tooDown) {
-                distUntilOutOfBounds = (CANVAS.height - y) / sinAngle;
-                moveToY = 0;
-            } else if (tooUp) {
-                distUntilOutOfBounds = (-y) / sinAngle;
-                moveToY = CANVAS.height;
-            }
-            newX = x + cosAngle * distUntilOutOfBounds;
-            newY = y + sinAngle * distUntilOutOfBounds;
-            possibleMovements.push({
-                x: x + cosAngle * distUntilOutOfBounds,
-                y: y + sinAngle * distUntilOutOfBounds,
-                length: distUntilOutOfBounds,
-                moveToX: newX,
-                moveToY: moveToY
-            });
-        }
-
-        let shortestMovement = possibleMovements[0];
-        for (let movement of possibleMovements) {
-            if (movement.length < shortestMovement.length) {
-                shortestMovement = movement;
-            }
-        }
-        return shortestMovement;
-    }
-
-
-    this.draw = (startX, startY, initialAngle) => {
-        let currentAngle = initialAngle || 0;
-        let [x, y] = [startX, startY];
-        let positionStack = [];
-        CONTEXT.strokeStyle = randomColor();
-        CONTEXT.beginPath();
-        CONTEXT.moveTo(startX, startY);
-        for (let char of this.string) {
-            switch (char) {
-                case 'F':
-                    let distanceRemaining = DISTANCE_PER_MOVEMENT;
-                    let nextMovement = this.getNextPenMovement(x, y, currentAngle, distanceRemaining);
-                    while (nextMovement.length < distanceRemaining) {
-                        CONTEXT.lineTo(nextMovement.x, nextMovement.y);
-                        CONTEXT.moveTo(nextMovement.moveToX, nextMovement.moveToY);
-                        [x, y] = [nextMovement.moveToX, nextMovement.moveToY];
-                        distanceRemaining -= nextMovement.length;
-                        nextMovement = this.getNextPenMovement(x, y, currentAngle, distanceRemaining);
-                    }
-                    CONTEXT.lineTo(nextMovement.x, nextMovement.y);
-                    [x, y] = [nextMovement.x, nextMovement.y];
-                    break;
-                case '+':
-                    currentAngle += this.angle;
-                    break;
-                case '-':
-                    currentAngle -= this.angle;
-                    break;
-                case '[':
-                    positionStack.push({
-                        x: x,
-                        y: y,
-                        angle: currentAngle
-                    });
-                    break;
-                case ']':
-                    let position = positionStack.pop();
-                    x = position.x;
-                    y = position.y;
-                    CONTEXT.moveTo(x, y);
-                    currentAngle = position.angle;
-                    break;
-            }
-        }
-        CONTEXT.stroke();
-        return [x, y];
     }
 }
 
@@ -505,25 +389,6 @@ function fadeCanvas() {
 }
 
 
-/*
-let systems = [
-    //new LSystem("T", {"F":"FFFFF-","T":"[]FFFTF"}, PI / 4),
-    //new LSystem("FF", {"F":"FQ+FB","G":"[W]F","X":"W+XQ+--Q+","W":"QG","Q":"G[W]W"}, degreeToRad(60)),
-    //new LSystem("FLLL", {"F":"FF-L+L","L":"+L[F+F]+L"}, degreeToRad(45)),
-    randomLSystem(),
-    randomLSystem(),
-    randomLSystem(),
-    randomLSystem(),
-    randomLSystem()
-]
-
-let x = 0, y = 0;
-for (let sys of systems) {
-    //sys.grow(10000);
-    sys.grow(LSYSTEM_MAX_LENGTH);
-    [x, y] = sys.draw(x, y);
-}
-*/
 
 drawRandomLSystemPath();
 setInterval(fadeCanvas, FADE_TIME_MS);
