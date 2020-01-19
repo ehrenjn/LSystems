@@ -23,6 +23,12 @@
 //SHOULD PROBABLY HAVE A POPUP THING BEFORE THE SITE THAT TELLS YOU HOW TO USE IT (maybe it could tell you to fullscreen if I dont fix that?)
 //should have a thing that lets people input their own custom LSystems instead of random ones
 
+//SOMETIMES I SEE A NEW LSYSTEM JUMP SOMEWHERE IN THE MIDDLE OF THE SCREEN INSTEAD OF FOLLOWING OLD ONE?
+    //very high chance that this is just caused by a bunch of closing square brackets at the end (since beginning of old lsystem has already faded away)
+
+//IM GETTING RID OF THE WIDTH MULTIPLIED BY 4 BS NOW BUT IF YOU WANNA TEST IT LATER YOU SHOULD JUST RUN THE SAME LSYSTEM ON 2 INSTANCES AND MAKE SURE THEY LOOK THE SAME
+    //would need to change resizeCanvas (width and height are * 4), LINE_WIDTH, and DISTANCE_PER_MOVEMENT
+
 //TEST RAND SYSTEM REWRITE:
     //number of rules are maxed at 5
         //could maybe add an extra nop instruction for every extra char? would that become a mess?
@@ -31,16 +37,16 @@
 
 //RN YOU SEEM TO NOT BE USING ANY SQUARE BRACKETS BECAUSE YOU TOOK THEM OUT OF THE LIST OF CHARS BUT ITS LOOKING VERY NICE, SO MAYBE YOU SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE
 //IF ANGLE IS STORED IN THE LSYSTEM THEN SHOULDN'T COLOR BE TOO?
+//MIGHT WANNA PASS AROUND CANVAS AND CONTEXT INSTEAD OF HAVING THEM GLOBAL, IDK (think about it)
+
 
 
 "use strict";
 
 const CANVAS = document.getElementById("canvas");
 const CONTEXT = CANVAS.getContext("2d");
-const DISTANCE_PER_MOVEMENT = 80;
 const PI = Math.PI; //just to make this shorter
 
-resizeCanvas();
 
 //consts for randomly generating lsystems
 const MIN_RULES = 2;
@@ -56,9 +62,13 @@ const MIN_ANGLE = 5;
 const LSYSTEM_MAX_LENGTH = 2000;
 
 //drawing
+const DISTANCE_PER_MOVEMENT = 20;
+const LINE_WIDTH = 2;
 const MS_PER_TURTLE_MOVE = 10;
-const FS_PER_TURTLE_MOVE = 5;//50; //number of "F" commands per turtle move
+const FS_PER_TURTLE_MOVE = 2;//5;//50; //number of "F" commands per turtle move
 const FADE_TIME_MS = 100;
+
+resizeCanvas();
 
 
 
@@ -430,9 +440,9 @@ function fadeCanvas() {
 
 
 function resizeCanvas() {
-    CANVAS.width = window.innerWidth * 4;
-    CANVAS.height = window.innerHeight * 4;
-    CONTEXT.lineWidth = 8;
+    CANVAS.width = window.innerWidth;
+    CANVAS.height = window.innerHeight;
+    CONTEXT.lineWidth = LINE_WIDTH;
     CONTEXT.strokeStyle = randomColor();
 }
 
