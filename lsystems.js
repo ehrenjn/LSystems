@@ -12,23 +12,25 @@
     //dont wanna ruin it on full screen though... maybe check how it looks once you finish the smoothing
 //LOOK INTO Path2D FOR KEEPING TRACK OF PATHS (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
 
-//GOD DAMN IT, WHEN IM MAKING SURE STRINGS CONTAIN AN F I LET IT REPLACE ANY CHAR WITH F INCLUDING [ AND ]
-    //CANT JUST TELL IT TO NOT REPLACE THOSE BECAUSE ITS POSSIBLE TO GET RULES THAT ONLY HAVE [ AND ]
-    //might wanna refactor all the generation but dunno where to start
-    //SIMPLEST SOLUTION: WHEN ADDING F TO SOMEWHERE JUST TAKE OFF THE FIRST CHAR OF THE STRING, IF IT WAS "[" THEN ALSO TAKE OUT THE FIRST "]", THEN SPRINKLE IN EITHER 1 OR 2 F'S RANDOMLY DEPENDING ON HOW MANY CHARS YOU GOT RID OF
-        //OR just add a new f without removing anything or always only add in 1 f if you dont really care about it being "perfect"
-
-//STILL GOTTA TEST SQUARE BRACKET REPLACEMENT
-//REPLACING THE SQUARE BRACKETS ARE MESSING UP THE RULE FROMS
-    //AT THIS POINT JUST REWRITE THE RANDOM L SYSTEM STRING GENERATION AND HOPEFULLY GET RID OF THAT "HACK" LINE (but maybe youll still need it, whatever)
-
 //STRAIGHT LINES DONT LOOK SO GREAT, TRY TO FIGURE OUT A WAY TO REDUCE THOSE
+    //could probably make it so you can control the rairity of every letter (so you can just make F less common)
     //ALSO WANNA TRY TO GET RID OF THE ONES THAT DONT DO ANYTHING
 //WOULD IT BE POSSIBLE TO MAKE THE LSYSTEMS THEMSELVES HAVE A COLOR SWITCH INSTRUCTION? 
     //would be annoying because I'd probably want a color stack... but maybe just having an instruction to switch to a complementry color or something would work?
 //SHOULD MAKE A MENU YOU CAN ACCESS WITH THE MOUSE
-//SHOULD MAKE COLORS HAVE A MINIMUM BRIGHTNESS (like 200 or something idk)
 //MIGHT WANNA MAKE IT SO YOU DONT HAVE TO FULLSCREEN (a border would be kinda ugly though, try to find a better way)
+    //THE ISSUE WITH THE PATHS LOOKING FUCKED LOOKS SIMILAR TO WHAT RESIZING USED TO LOOK LIKE... SO MAYBE THERES A CONNECTION
+//SHOULD PROBABLY HAVE A POPUP THING BEFORE THE SITE THAT TELLS YOU HOW TO USE IT (maybe it could tell you to fullscreen if I dont fix that?)
+//should have a thing that lets people input their own custom LSystems instead of random ones
+
+//TEST RAND SYSTEM REWRITE:
+    //number of rules are maxed at 5
+        //could maybe add an extra nop instruction for every extra char? would that become a mess?
+    //HOPEFULLY YOU GET RID OF THIS https://puu.sh/EZDaR/33afbd8f23.png (from github.io)
+    //make sure you have the right ratio of 5 rule lsystems (because before 5 ruler's were getting overwritten)
+
+//RN YOU SEEM TO NOT BE USING ANY SQUARE BRACKETS BECAUSE YOU TOOK THEM OUT OF THE LIST OF CHARS BUT ITS LOOKING VERY NICE, SO MAYBE YOU SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE
+//IF ANGLE IS STORED IN THE LSYSTEM THEN SHOULDN'T COLOR BE TOO?
 
 
 "use strict";
@@ -36,12 +38,9 @@
 const CANVAS = document.getElementById("canvas");
 const CONTEXT = CANVAS.getContext("2d");
 const DISTANCE_PER_MOVEMENT = 80;
-const PI = Math.PI; //just to make is shorter
+const PI = Math.PI; //just to make this shorter
 
-CANVAS.width = screen.width * 4;
-CANVAS.height = screen.height * 4;
-CONTEXT.lineWidth = 8;
-CONTEXT.strokeStyle = "white";
+resizeCanvas();
 
 //consts for randomly generating lsystems
 const MIN_RULES = 2;
@@ -54,12 +53,11 @@ const NON_RANDOM_ANGLES = [20, 30, 36, 45, 60, 90, 135];
 const RANDOM_ANGLE_CHANCE = 0.5;
 const MAX_ANGLE = 179;
 const MIN_ANGLE = 5;
-const POSSIBLE_CHARS = ['F', '+', '-', '[', 'A', 'B']
 const LSYSTEM_MAX_LENGTH = 2000;
 
 //drawing
 const MS_PER_TURTLE_MOVE = 10;
-const FS_PER_TURTLE_MOVE = 50; //number of "F" commands per turtle move
+const FS_PER_TURTLE_MOVE = 5;//50; //number of "F" commands per turtle move
 const FADE_TIME_MS = 100;
 
 
@@ -75,16 +73,17 @@ function LSystem(seed, rules, angle) {
         while (grownString.length < maxLen) {
             //console.log(grownString);
             this.string = grownString; //only update this.string when we know the grown string is below max length
-            grownString = "";
+            let grownStringAry = [];
             for (let char of this.string) {
                 if (char in this.rules) {
-                    grownString = grownString.concat(this.rules[char]);
+                    grownStringAry.push(this.rules[char]);
                 } else {
-                    grownString = grownString.concat(char);
+                    grownStringAry.push(char);
                 }
             }
-            if (grownString == this.string) {
-                break; //HACK TO FIX ISSUE WITH RULES RUNNING FOREVER 
+            grownString = grownStringAry.join('');
+            if (grownString == this.string) { //stop trying to grow if it can't anymore (will happen if rules look something like {a: bbb, b: ccc, c: ddd})
+                break;
             }
         }
     }
@@ -121,7 +120,6 @@ function randomColor() {
             color += newDigit.toString(16);
         }
     } while (color.match(/#(([abcdef].....)|(..[abcdef]...)|(....[abcdef].))/) === null); //make sure color is bright
-    console.log(color)
     return color;
 }
 
@@ -130,87 +128,129 @@ function chance(percentage) {
 }
 
 
-function randLSystemString(length, usedCharsSet) {
-    let string = "";
-    let closingBracketLocations = new Set();
-    for (let char = 0; char < length; char ++) {
-        let newChar = randChoice(POSSIBLE_CHARS);
-        //console.log(char, string, closingBracketLocations, newChar);
-        if (closingBracketLocations.has(char)) {
-            newChar = ']';
+const POSSIBLE_CHARS = ['F', '+', '-', 'A', 'B'];
+const SQUARE_BRACKET_CHANCE = 1 / (POSSIBLE_CHARS.length + 1); //chance of a character in an lsystem string being an opening square bracket
+
+function randLSystemString(length) {
+    let numBracketPairs = 0;
+    for (let pairNum = 0; pairNum < Math.floor(length / 2); pairNum ++) { //length / 2 because we generate brackets 2 at a time (pair of chars)
+        if (chance(SQUARE_BRACKET_CHANCE)) {
+            numBracketPairs ++;
         }
-        else if (newChar == '[') {
-            if (closingBracketLocations.size >= length - char - 1) { // dont do anything if no more room in string
-                char --;
-                continue;
-            } else {
-                let newClosingBracketLocation;
-                do {
-                    newClosingBracketLocation = randInt(char + 1, length - 1);
-                } while (closingBracketLocations.has(newClosingBracketLocation));
-                closingBracketLocations.add(newClosingBracketLocation);
-                newChar = '['
-            }
-        }
-        if (newChar != '[' && newChar != ']') {
-            usedCharsSet.add(newChar);
-        }
-        string += newChar;
     }
+
+    let string = "";
+    let numRandomLetters = length - (numBracketPairs * 2);
+    for (; numRandomLetters > 0; numRandomLetters --) {
+        string += randChoice(POSSIBLE_CHARS);
+    }
+
+    for (let bracketPair = 0; bracketPair < numBracketPairs; bracketPair ++) {
+        let openingLocation = randInt(0, string.length);
+        let closingLocation = randInt(openingLocation, string.length);
+        string = string.substring(0, openingLocation) + '[' +
+                string.substring(openingLocation, closingLocation) + ']' +
+                string.substring(closingLocation, string.length);
+    }
+
     return string;
 }
 
 
-function randomLSystem() {
-    console.log("starting rand sys")
-    let usedChars = new Set();
+function CharSet(bannedChars) {
+    this.bannedChars = new Set(bannedChars);
+    this.set = new Set();
 
-    let num_start_chars = randInt(MIN_START_LENGTH, MAX_START_LENGTH);
-    let start = randLSystemString(num_start_chars, usedChars);
+    this.addChars = function(str) {
+        for (let char of str) {
+            if (! this.bannedChars.has(char)) {
+                this.set.add(char);
+            }
+        }
+    }
 
+    this.banChar = function(char) {
+        this.set.delete(char);
+        this.bannedChars.add(char);
+    }
+
+    this.randChar = function() {
+        return randChoice(Array.from(this.set));
+    }
+}
+
+
+function randAngle() {
     let angle;
     if (chance(RANDOM_ANGLE_CHANCE)) {
         angle = randInt(MIN_ANGLE, MAX_ANGLE);
     } else {
         angle = randChoice(NON_RANDOM_ANGLES);
     }
-    angle = degreeToRad(angle);
+    return degreeToRad(angle);
+}
 
-    let rules = {};
-    let numRules = randInt(MIN_RULES, MAX_RULES);
+
+function createRandomRuleStrings(numRules) {
+    let ruleStrings = [];
     for (let rule = 0; rule < numRules; rule ++) {
         let ruleLength = randInt(MIN_RULE_LENGTH, MAX_RULE_LENGTH);
-        let ruleFrom = randChoice(Array.from(usedChars));
-        let ruleTo = randLSystemString(ruleLength, usedChars);
-        rules[ruleFrom] = ruleTo;
+        let newRuleString = randLSystemString(ruleLength);
+        ruleStrings.push(newRuleString);
     }
 
     // make sure rules have at least one F
     let hasF = false;
-    for (let ruleTo in Object.values(rules)) {
-        if (ruleTo.search('F') != -1) {
+    for (let ruleStr of ruleStrings) {
+        if (ruleStr.search('F') != -1) {
             hasF = true;
             break;
         }
     }
     if (!hasF) {
-        let [randRuleFrom, randRuleTo] = randChoice(Object.entries(rules));
-        let numFs = 1;
-        if (randRuleTo.charAt(0) == "[") {
-            numFs = 2;
-            randRuleTo = randRuleTo.replace(']', '');
-        }
-        randRuleTo = randRuleTo.substr(1);
-        for (; numFs > 0; numFs --) {
-            let randIndex = randInt(0, randRuleTo.length - 1);
-            randRuleTo = randRuleTo.substring(0, randIndex) + "F" + 
-                randRuleTo.substring(randIndex, randRuleTo.length);
-        }
-        rules[randRuleFrom] = randRuleTo;
+        let [randRuleNum, randRuleStr] = randChoice(Array.from(ruleStrings.entries()));
+        let fLocation = randInt(0, randRuleStr.length);
+        ruleStrings[randRuleNum] = randRuleStr.substring(0, fLocation) + 'F' + 
+            randRuleStr.substring(fLocation) //this could make this rule exceed the maximum rule length but it doesn't matter too much and is way simpler than maintaining the max rule length (would have to deal with square brackets)
     }
 
-    console.log("NEW SYS: ", start, rules)
-    return new LSystem(start, rules, angle);
+    return ruleStrings;
+}
+
+
+function tryToCreateRuleMap(start, ruleStrings) {
+    let usedChars = new CharSet("[]"); //make sure [ and ] can't be rule keys
+    usedChars.addChars(start);
+    let allRules = {};
+    let ruleStrsEntries = Array.from(ruleStrings.entries());
+    let numRules = ruleStrings.length;
+    for (let rule = 0; rule < numRules; rule ++) {
+        let [ruleStrIndex, ruleStr] = randChoice(ruleStrsEntries);
+        let ruleKey = usedChars.randChar();
+        if (ruleKey === undefined) { //we ran out of key choices :(
+            return undefined; //rule map generation failed
+        }
+        allRules[ruleKey] = ruleStr;
+        usedChars.banChar(ruleKey);
+        usedChars.addChars(ruleStr);
+        ruleStrsEntries.pop(ruleStrIndex);
+    }
+    return allRules; 
+}
+
+
+function randomLSystem() {
+    let angle = randAngle();
+    let numRules = randInt(MIN_RULES, MAX_RULES);
+    let start;
+    let ruleMap;
+    while (ruleMap === undefined) { //randomly generate rules (and start) until something works
+        let ruleStrings = createRandomRuleStrings(numRules);
+        let num_start_chars = randInt(MIN_START_LENGTH, MAX_START_LENGTH);
+        start = randLSystemString(num_start_chars);
+        ruleMap = tryToCreateRuleMap(start, ruleStrings);
+    }
+    return new LSystem(start, ruleMap, angle);
 }
 
 
@@ -389,6 +429,15 @@ function fadeCanvas() {
 }
 
 
+function resizeCanvas() {
+    CANVAS.width = window.innerWidth * 4;
+    CANVAS.height = window.innerHeight * 4;
+    CONTEXT.lineWidth = 8;
+    CONTEXT.strokeStyle = randomColor();
+}
+
+
 
 drawRandomLSystemPath();
 setInterval(fadeCanvas, FADE_TIME_MS);
+window.addEventListener('resize', resizeCanvas);
