@@ -22,12 +22,15 @@
     //THE ISSUE WITH THE PATHS LOOKING FUCKED LOOKS SIMILAR TO WHAT RESIZING USED TO LOOK LIKE... SO MAYBE THERES A CONNECTION
 //SHOULD PROBABLY HAVE A POPUP THING BEFORE THE SITE THAT TELLS YOU HOW TO USE IT (maybe it could tell you to fullscreen if I dont fix that?)
 //should have a thing that lets people input their own custom LSystems instead of random ones
+//SHOULD MAKE THE STARTING STRING LENGTH AND RULE STRING LENGTHS TUNABLE, WOULD HELP A LOT TO INCREASE COMPLEXITY
+    //right now square brackets are used quite rarely, and usually not even around Fs
 
 //SOMETIMES I SEE A NEW LSYSTEM JUMP SOMEWHERE IN THE MIDDLE OF THE SCREEN INSTEAD OF FOLLOWING OLD ONE?
     //very high chance that this is just caused by a bunch of closing square brackets at the end (since beginning of old lsystem has already faded away)
 
 //IM GETTING RID OF THE WIDTH MULTIPLIED BY 4 BS NOW BUT IF YOU WANNA TEST IT LATER YOU SHOULD JUST RUN THE SAME LSYSTEM ON 2 INSTANCES AND MAKE SURE THEY LOOK THE SAME
     //would need to change resizeCanvas (width and height are * 4), LINE_WIDTH, and DISTANCE_PER_MOVEMENT
+    //also if you wanna make it larger do * 2, not * 4
 
 //TEST RAND SYSTEM REWRITE:
     //number of rules are maxed at 5
@@ -49,26 +52,26 @@ const PI = Math.PI; //just to make this shorter
 
 
 //consts for randomly generating lsystems
-const MIN_RULES = 2;
-const MAX_RULES = 5;
-const MIN_START_LENGTH = 1;
-const MAX_START_LENGTH = 5;
-const MIN_RULE_LENGTH = 2;
-const MAX_RULE_LENGTH = 5;
+let MIN_RULES = 2;
+let MAX_RULES = 5;
+let MIN_START_LENGTH = 1;
+let MAX_START_LENGTH = 5;
+let MIN_RULE_LENGTH = 2;
+let MAX_RULE_LENGTH = 5;
 const NON_RANDOM_ANGLES = [20, 30, 36, 45, 60, 90, 135];
-const RANDOM_ANGLE_CHANCE = 0.5;
+let RANDOM_ANGLE_CHANCE = 0.5;
 const MAX_ANGLE = 179;
 const MIN_ANGLE = 5;
-const LSYSTEM_MAX_LENGTH = 2000;
+let LSYSTEM_MAX_LENGTH = 2000;
 
 //drawing
-const DISTANCE_PER_MOVEMENT = 20;
-const LINE_WIDTH = 2;
-const MS_PER_TURTLE_MOVE = 10;
-const FS_PER_TURTLE_MOVE = 2;//5;//50; //number of "F" commands per turtle move
-const FADE_TIME_MS = 100;
+let DISTANCE_PER_MOVEMENT = 20;
+let LINE_WIDTH = 2;
+let MS_PER_TURTLE_MOVE = 10;
+let FS_PER_TURTLE_MOVE = 5//2;//5;//50; //number of "F" commands per turtle move
+let FADE_TIME_MS = 100;
 
-resizeCanvas();
+resizeCanvas(); //initialize canvas to proper size
 
 
 

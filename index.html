@@ -1,4 +1,134 @@
-<body style="margin: 0px;">
-<canvas id="canvas" style="width: 100%; height: 100%; background-color: black;"></canvas>
+<head>
+<style>
+body {
+    margin: 0px;
+    overflow: hidden; /* hide scrollbars */
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+
+#menu {
+    background-color: rgba(255, 255, 255, 0.5);
+    position: absolute;
+    top: 40px;
+    left: 40px;
+}
+
+.menu-button {
+    background-color: rgba(0, 0, 0, 0.5);
+    margin: 2px;
+    width: 450px;
+    height: 20px;
+}
+
+
+.slider-div {
+    user-select: none; /*make unhighlightable*/
+    float: right;
+    height: 100%;
+}
+
+.slider-OLD {
+    -webkit-appearance: none;
+    width: 200px;
+    height: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: .5;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 7px;
+    height: 15px;
+    background: blue;
+    cursor: pointer;
+}
+
+
+
+.numbox {
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.slider {
+    background-color: red;
+    width: 206px;
+    height: 5px;
+    display: inline-block;
+    margin: 0px 4px 2px 4px;
+    opacity: 0.5;
+}
+
+.slider-grip {
+    width: 6px;
+    height: 14px;
+    background: blue;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    top: 2px;
+    right: 214px;
+    opacity: 0.5;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<canvas id="canvas"></canvas>
 <script src="lsystems.js"></script>
+
+
+<div id="menu" hidden>
+    <div class="menu-button">
+        Fade time
+        <div id="fadeTimeSlider" class="slider-div">
+            <div class="numbox">0</div>
+            <div class="slider"></div>
+            <div class="slider-grip"></div>
+        </div>
+    </div>
+    <div class="menu-button">
+        Distance per movement
+        <div id="distancePerMovementSlider" class="slider-div">
+            <div class="numbox">0</div>
+            <div class="slider"></div>
+            <div class="slider-grip"></div>
+        </div>
+    </div>
+    <div class="menu-button">
+        Line width
+        <div id="lineWidthSlider" class="slider-div">
+            <div class="numbox">0</div>
+            <div class="slider"></div>
+            <div class="slider-grip"></div>
+        </div>
+    </div>
+    <div class="menu-button">
+        Lines per movement
+        <div id="linesPerMovementSlider" class="slider-div">
+            <div class="numbox">0</div>
+            <div class="slider"></div>
+            <div class="slider-grip"></div>
+        </div>
+    </div>
+    <div class="menu-button">
+        Time per movement
+        <div id="timePerMovementSlider" class="slider-div">
+            <div class="numbox">0</div>
+            <div class="slider"></div>
+            <div class="slider-grip"></div>
+        </div>
+    </div>
+</div>
+<script src="menu.js"></script>
+
 </body>
