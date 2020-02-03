@@ -6,6 +6,8 @@
 //NEED TO MAKE SLIDERS HAVE DEFAULTS
     //since we're gonna have non linear sliders and stuff we probably just want every mapping to have a locationToVal function as well as a valToLocation function, and then just use valToLocation to calculate the initial... but that valToLocation might be overkill
 
+//MAKE SURE YOUR STRETCH FUNCTION WORKS (I SEEM TO BE ABLE TO CHANGE THE INITIAL POSITION OF THE 4TH SLIDER BY LIKE 1 PIXEL WITHOUT IT GOING OFF OF 5??)
+
 
 "use strict";
 
@@ -23,6 +25,7 @@ const SLIDER_MAPPINGS = [
         max: 10000,
         initial: FADE_TIME_MS,
         units: "ms",
+        converter: LinearConverter,
         update: val => FADE_TIME_MS = val
     },
     {
@@ -31,6 +34,7 @@ const SLIDER_MAPPINGS = [
         max: 500,
         initial: DISTANCE_PER_MOVEMENT,
         units: "px",
+        converter: LinearConverter,
         update: val => DISTANCE_PER_MOVEMENT = val
     },
     {
@@ -39,6 +43,7 @@ const SLIDER_MAPPINGS = [
         max: 20,
         initial: LINE_WIDTH,
         units: "px",
+        converter: LinearConverter,
         update: val => {
             LINE_WIDTH = val;
             CONTEXT.lineWidth = LINE_WIDTH;
@@ -50,6 +55,7 @@ const SLIDER_MAPPINGS = [
         max: 200,
         initial: FS_PER_TURTLE_MOVE,
         units: "",
+        converter: LinearConverter,
         update: val => FS_PER_TURTLE_MOVE = val
     },
     {
@@ -58,9 +64,35 @@ const SLIDER_MAPPINGS = [
         max: 1000,
         initial: MS_PER_TURTLE_MOVE,
         units: "ms",
+        converter: LinearConverter,
         update: val => MS_PER_TURTLE_MOVE = val
     }
 ]
+
+
+function LinearConverter(valMin, valMax) {
+    let valAmplitude = valMax - valMin;
+
+    function stretch(num, oldMin, oldMax, newMin, newMax) {
+        let numAsPercent = (num - oldMin) / (oldMax - oldMin);
+        let newNum = numAsPercent * (newMax - newMin) + newMin;
+        newNum = keepNumWithin(newNum, newMin, newMax) //make absolutely sure we don't go out of bounds
+        return Math.floor(newNum);
+    }
+
+    this.locationToVal = function(offsetX) {
+        return stretch(offsetX, 0, SLIDER_LENGTH_PIX, valMin, valMax);
+    }
+
+    this.valToLocation = function(val) {
+        return stretch(val, valMin, valMax, 0, SLIDER_LENGTH_PIX);
+    }
+}
+
+
+function ExponentialConverter() {
+
+}
 
 
 function keepNumWithin(num, min, max) {
@@ -75,30 +107,33 @@ function setUpSliderMappings() {
         let slider = sliderDiv.querySelector(".slider");
         let sliderGrip = sliderDiv.querySelector(".slider-grip");
         let numbox = sliderDiv.querySelector(".numbox");
+        let converter = new mapping.converter(mapping.min, mapping.max);
 
-        function locationToVal(offsetX) {
-            let valAmplitude = mapping.max - mapping.min;
-            let valAsPercent = offsetX/SLIDER_LENGTH_PIX;
-            let val = valAsPercent * valAmplitude + mapping.min;
-            val = keepNumWithin(val, mapping.min, mapping.max) //make absolutely sure we don't go out of bounds
-            return Math.floor(val);
-        }
-
-        function updateEverything(event) {
-            let offsetX = event.clientX - slider.getBoundingClientRect().x;
-            offsetX = keepNumWithin(offsetX, 0, SLIDER_LENGTH_PIX);
-            let val = locationToVal(offsetX);
-            numbox.innerText = val;
+        function updateEverything(val, offsetX) {
+            numbox.innerText = val + " " + mapping.units;
             sliderGrip.style.right = SLIDER_ZERO_POSITION - offsetX;
             mapping.update(val);
         }
 
+        function updateEverythingViaEvent(event) {
+            let offsetX = event.clientX - slider.getBoundingClientRect().x; //mouse location relative to slider
+            offsetX = keepNumWithin(offsetX, 0, SLIDER_LENGTH_PIX);
+            let val = converter.locationToVal(offsetX);
+            updateEverything(val, offsetX);
+        }
+
+        function updateEverythingViaVal(val) {
+            let offsetX = converter.valToLocation(val);
+            updateEverything(val, offsetX);
+        }
+
         slider.onmousedown = clickEvent => {
-            updateEverything(clickEvent);
-            window.onmousemove = updateEverything;
+            updateEverythingViaEvent(clickEvent);
+            window.onmousemove = updateEverythingViaEvent;
         }
         sliderGrip.onmousedown = slider.onmousedown;
-        //updateSliderUI(mapping.initial); //initialize the slider value
+
+        updateEverythingViaVal(mapping.initial); //initialize the slider value
     }
 
     window.onmouseup = () => window.onmousemove = null;
