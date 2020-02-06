@@ -450,8 +450,7 @@ function resizeCanvas() {
 }
 
 
-/*
+
 drawRandomLSystemPath();
 setInterval(fadeCanvas, FADE_TIME_MS);
 window.addEventListener('resize', resizeCanvas);
-*/

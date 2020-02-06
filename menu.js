@@ -70,13 +70,27 @@ const SLIDER_MAPPINGS = [
 ]
 
 
+
+function keepNumWithin(num, min, max) {
+    num = num > max ? max : num;
+    return num < min ? min : num;
+}
+
+function numToPercent(num, min, max) {
+    return (num - min) / (max - min);
+}
+
+function percentToNum(percent, min, max) {
+    let num = percent * (max - min) + min;
+    return keepNumWithin(num, min, max) //make absolutely sure we don't go out of bounds
+}
+
+
 function LinearConverter(valMin, valMax) {
-    let valAmplitude = valMax - valMin;
 
     function stretch(num, oldMin, oldMax, newMin, newMax) {
-        let numAsPercent = (num - oldMin) / (oldMax - oldMin);
-        let newNum = numAsPercent * (newMax - newMin) + newMin;
-        newNum = keepNumWithin(newNum, newMin, newMax) //make absolutely sure we don't go out of bounds
+        let numAsPercent = numToPercent(num, oldMin, oldMax);
+        let newNum = percentToNum(numAsPercent, newMin, newMax);
         return Math.floor(newNum);
     }
 
@@ -90,15 +104,17 @@ function LinearConverter(valMin, valMax) {
 }
 
 
-function ExponentialConverter() {
+function ExponentialConverter(valMin, valMax) {
 
+    this.locationToVal = function(offsetX) {
+
+    }
+
+    this.valToLocation = function(val) {
+
+    }
 }
 
-
-function keepNumWithin(num, min, max) {
-    num = num > max ? max : num;
-    return num < min ? min : num;
-}
 
 
 function setUpSliderMappings() {
