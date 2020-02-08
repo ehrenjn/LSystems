@@ -12,36 +12,20 @@
     //dont wanna ruin it on full screen though... maybe check how it looks once you finish the smoothing
 //LOOK INTO Path2D FOR KEEPING TRACK OF PATHS (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
 
-//STRAIGHT LINES DONT LOOK SO GREAT, TRY TO FIGURE OUT A WAY TO REDUCE THOSE
-    //could probably make it so you can control the rairity of every letter (so you can just make F less common)
-    //ALSO WANNA TRY TO GET RID OF THE ONES THAT DONT DO ANYTHING
 //WOULD IT BE POSSIBLE TO MAKE THE LSYSTEMS THEMSELVES HAVE A COLOR SWITCH INSTRUCTION? 
     //would be annoying because I'd probably want a color stack... but maybe just having an instruction to switch to a complementry color or something would work?
-//SHOULD MAKE A MENU YOU CAN ACCESS WITH THE MOUSE
-//MIGHT WANNA MAKE IT SO YOU DONT HAVE TO FULLSCREEN (a border would be kinda ugly though, try to find a better way)
-    //THE ISSUE WITH THE PATHS LOOKING FUCKED LOOKS SIMILAR TO WHAT RESIZING USED TO LOOK LIKE... SO MAYBE THERES A CONNECTION
 //SHOULD PROBABLY HAVE A POPUP THING BEFORE THE SITE THAT TELLS YOU HOW TO USE IT (maybe it could tell you to fullscreen if I dont fix that?)
 //should have a thing that lets people input their own custom LSystems instead of random ones
-//SHOULD MAKE THE STARTING STRING LENGTH AND RULE STRING LENGTHS TUNABLE, WOULD HELP A LOT TO INCREASE COMPLEXITY
-    //right now square brackets are used quite rarely, and usually not even around Fs
 
 //SOMETIMES I SEE A NEW LSYSTEM JUMP SOMEWHERE IN THE MIDDLE OF THE SCREEN INSTEAD OF FOLLOWING OLD ONE?
     //very high chance that this is just caused by a bunch of closing square brackets at the end (since beginning of old lsystem has already faded away)
-
-//IM GETTING RID OF THE WIDTH MULTIPLIED BY 4 BS NOW BUT IF YOU WANNA TEST IT LATER YOU SHOULD JUST RUN THE SAME LSYSTEM ON 2 INSTANCES AND MAKE SURE THEY LOOK THE SAME
-    //would need to change resizeCanvas (width and height are * 4), LINE_WIDTH, and DISTANCE_PER_MOVEMENT
-    //also if you wanna make it larger do * 2, not * 4
-
-//TEST RAND SYSTEM REWRITE:
-    //number of rules are maxed at 5
-        //could maybe add an extra nop instruction for every extra char? would that become a mess?
-    //HOPEFULLY YOU GET RID OF THIS https://puu.sh/EZDaR/33afbd8f23.png (from github.io)
-    //make sure you have the right ratio of 5 rule lsystems (because before 5 ruler's were getting overwritten)
 
 //RN YOU SEEM TO NOT BE USING ANY SQUARE BRACKETS BECAUSE YOU TOOK THEM OUT OF THE LIST OF CHARS BUT ITS LOOKING VERY NICE, SO MAYBE YOU SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE
 //IF ANGLE IS STORED IN THE LSYSTEM THEN SHOULDN'T COLOR BE TOO?
 //MIGHT WANNA PASS AROUND CANVAS AND CONTEXT INSTEAD OF HAVING THEM GLOBAL, IDK (think about it)
 
+//BIIIIG ISSUE I JUST REALIZED: SOMETIMES NEW LSYSTEM TAKES A WHILE TO LOAD (fades and everything freeze)
+    //OBVIOUSLY RAISING COMPLEXITY FIXES IT BUT ITS PROBABLY HAPPENING ON NORMAL SETTINGS WHICH AINT GREAT
 
 
 "use strict";

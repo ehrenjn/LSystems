@@ -1,13 +1,12 @@
 //HAVE TO CHANGE HOW FADE TIME IS USED IF I WANT TO BE ABLE TO CHANGE IT
-//MAKE SLIDERS USE A PROPER SUPPORTED ELEMENT
-//ADD NON LINEAR SLIDERS
-    //just have a locationToVal function in every mapping, most of the time its just a func called linear() but for exponential stuff its exponential(2) or something
 //PROBABLY WANT TO MAKE SLIDERS WIDER/EASIER TO CLICK ON
 //NEED TO MAKE SLIDERS HAVE DEFAULTS
     //since we're gonna have non linear sliders and stuff we probably just want every mapping to have a locationToVal function as well as a valToLocation function, and then just use valToLocation to calculate the initial... but that valToLocation might be overkill
 
 //MAKE SURE YOUR STRETCH FUNCTION WORKS (I SEEM TO BE ABLE TO CHANGE THE INITIAL POSITION OF THE 4TH SLIDER BY LIKE 1 PIXEL WITHOUT IT GOING OFF OF 5??)
-
+//MAX AND MIN RULES SEEM PRETTY IFFY... HAVE TO MAKE SURE THEY WORK (something nasty should happen when you set min rules above max rules)
+    //ALSO: CAN I GO DOWN TO 1? ABOVE 5? THINK ABOUT IT
+//STILL NEED TO MAKE MAPPINGS FOR STARTING SIZE
 
 "use strict";
 
@@ -17,6 +16,8 @@ const SLIDER_ZERO_POSITION = 214; //when slider grip is this far left it's at 0
 const SLIDER_FULL_POSITION = 14;
 const SLIDER_LENGTH_PIX = SLIDER_ZERO_POSITION - SLIDER_FULL_POSITION; //number of positions slider has in pixels
 
+const LinearConverter = createConverterClass(1);
+
 
 const SLIDER_MAPPINGS = [
     {
@@ -25,7 +26,7 @@ const SLIDER_MAPPINGS = [
         max: 10000,
         initial: FADE_TIME_MS,
         units: "ms",
-        converter: LinearConverter,
+        converter: createConverterClass(4),
         update: val => FADE_TIME_MS = val
     },
     {
@@ -34,7 +35,7 @@ const SLIDER_MAPPINGS = [
         max: 500,
         initial: DISTANCE_PER_MOVEMENT,
         units: "px",
-        converter: LinearConverter,
+        converter: createConverterClass(4),
         update: val => DISTANCE_PER_MOVEMENT = val
     },
     {
@@ -55,7 +56,7 @@ const SLIDER_MAPPINGS = [
         max: 200,
         initial: FS_PER_TURTLE_MOVE,
         units: "",
-        converter: LinearConverter,
+        converter: createConverterClass(2),
         update: val => FS_PER_TURTLE_MOVE = val
     },
     {
@@ -64,8 +65,62 @@ const SLIDER_MAPPINGS = [
         max: 1000,
         initial: MS_PER_TURTLE_MOVE,
         units: "ms",
-        converter: LinearConverter,
+        converter: createConverterClass(3),
         update: val => MS_PER_TURTLE_MOVE = val
+    },
+    {
+        id: "angleRandomnessSlider",
+        min: 0,
+        max: 100,
+        initial: Math.floor(RANDOM_ANGLE_CHANCE * 100),
+        units: "%",
+        converter: LinearConverter,
+        update: val => RANDOM_ANGLE_CHANCE = val / 100
+    },
+    {
+        id: "minRulesSlider",
+        min: 2,
+        max: 5,
+        initial: MIN_RULES,
+        units: "",
+        converter: LinearConverter,
+        update: val => MIN_RULES = val
+    },
+    {
+        id: "maxRulesSlider",
+        min: 2,
+        max: 5,
+        initial: MAX_RULES,
+        units: "",
+        converter: LinearConverter,
+        update: val => MAX_RULES = val
+    },
+    {
+        id: "minRuleLengthSlider",
+        min: 2,
+        max: 30,
+        initial: MIN_RULE_LENGTH,
+        units: "",
+        converter: createConverterClass(2),
+        update: val => MIN_RULE_LENGTH = val
+    },
+    {
+        id: "maxRuleLengthSlider",
+        min: 2,
+        max: 30,
+        initial: MAX_RULE_LENGTH,
+        units: "",
+        converter: createConverterClass(2),
+        update: val => MAX_RULE_LENGTH = val
+    },
+    {
+        id: "maxSystemLengthSlider",
+        min: 10,
+        max: 10000,
+        initial: LSYSTEM_MAX_LENGTH,
+        units: "",
+        converter: createConverterClass(3),
+        update: val => LSYSTEM_MAX_LENGTH = val
     }
 ]
 
@@ -76,45 +131,38 @@ function keepNumWithin(num, min, max) {
     return num < min ? min : num;
 }
 
-function numToPercent(num, min, max) {
-    return (num - min) / (max - min);
-}
 
-function percentToNum(percent, min, max) {
-    let num = percent * (max - min) + min;
-    return keepNumWithin(num, min, max) //make absolutely sure we don't go out of bounds
-}
+function createConverterClass(power) {
 
+    function numToPercent(num, min, max) {
+        return (num - min) / (max - min);
+    }
+    
+    function percentToNum(percent, min, max) {
+        let num = percent * (max - min) + min;
+        return keepNumWithin(num, min, max) //make absolutely sure we don't go out of bounds
+    }
 
-function LinearConverter(valMin, valMax) {
-
-    function stretch(num, oldMin, oldMax, newMin, newMax) {
+    function stretch(num, oldMin, oldMax, newMin, newMax, percentBender) {
         let numAsPercent = numToPercent(num, oldMin, oldMax);
+        numAsPercent = percentBender(numAsPercent); //bend the normalized number (for non-linear sliders)
         let newNum = percentToNum(numAsPercent, newMin, newMax);
         return Math.floor(newNum);
     }
 
-    this.locationToVal = function(offsetX) {
-        return stretch(offsetX, 0, SLIDER_LENGTH_PIX, valMin, valMax);
-    }
+    return function(valMin, valMax) {
 
-    this.valToLocation = function(val) {
-        return stretch(val, valMin, valMax, 0, SLIDER_LENGTH_PIX);
-    }
-}
+        this.locationToVal = function(offsetX) {
+            let bender = percent => Math.pow(percent, power)
+            return stretch(offsetX, 0, SLIDER_LENGTH_PIX, valMin, valMax, bender);
+        }
 
-
-function ExponentialConverter(valMin, valMax) {
-
-    this.locationToVal = function(offsetX) {
-
-    }
-
-    this.valToLocation = function(val) {
-
+        this.valToLocation = function(val) {
+            let bender = percent => Math.pow(percent, 1/power);
+            return stretch(val, valMin, valMax, 0, SLIDER_LENGTH_PIX, bender);
+        }
     }
 }
-
 
 
 function setUpSliderMappings() {
