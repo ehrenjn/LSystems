@@ -4,9 +4,8 @@
     //since we're gonna have non linear sliders and stuff we probably just want every mapping to have a locationToVal function as well as a valToLocation function, and then just use valToLocation to calculate the initial... but that valToLocation might be overkill
 
 //MAKE SURE YOUR STRETCH FUNCTION WORKS (I SEEM TO BE ABLE TO CHANGE THE INITIAL POSITION OF THE 4TH SLIDER BY LIKE 1 PIXEL WITHOUT IT GOING OFF OF 5??)
-//MAX AND MIN RULES SEEM PRETTY IFFY... HAVE TO MAKE SURE THEY WORK (something nasty should happen when you set min rules above max rules)
-    //ALSO: CAN I GO DOWN TO 1? ABOVE 5? THINK ABOUT IT
-//STILL NEED TO MAKE MAPPINGS FOR STARTING SIZE
+// CAN MAX AND MIN RULES GO DOWN TO 1? ABOVE 5? THINK ABOUT IT
+//considering changing max rule length default because max 10 or 15 might be nicer than 5
 
 "use strict";
 
@@ -76,6 +75,24 @@ const SLIDER_MAPPINGS = [
         units: "%",
         converter: LinearConverter,
         update: val => RANDOM_ANGLE_CHANCE = val / 100
+    },
+    {
+        id: "minSeedSizeSlider",
+        min: 1,
+        max: 30,
+        initial: MIN_START_LENGTH,
+        units: "",
+        converter: createConverterClass(3),
+        update: val => MIN_START_LENGTH = val
+    },
+    {
+        id: "maxSeedSizeSlider",
+        min: 1,
+        max: 30,
+        initial: MAX_START_LENGTH,
+        units: "",
+        converter: createConverterClass(3),
+        update: val => MAX_START_LENGTH = val
     },
     {
         id: "minRulesSlider",

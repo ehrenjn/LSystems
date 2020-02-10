@@ -26,7 +26,7 @@
 
 //BIIIIG ISSUE I JUST REALIZED: SOMETIMES NEW LSYSTEM TAKES A WHILE TO LOAD (fades and everything freeze)
     //OBVIOUSLY RAISING COMPLEXITY FIXES IT BUT ITS PROBABLY HAPPENING ON NORMAL SETTINGS WHICH AINT GREAT
-
+    //HOL UP INSTEAD OF JUST COUNTING THE NUMBER OF ROUNDS AND CAPPING IT I CAN CHECK THE RATE AT WHICH ITS GROWING AND CHOOSE TO DO SOMETHING FROM THERE
 
 "use strict";
 
@@ -47,6 +47,7 @@ let RANDOM_ANGLE_CHANCE = 0.5;
 const MAX_ANGLE = 179;
 const MIN_ANGLE = 5;
 let LSYSTEM_MAX_LENGTH = 2000;
+const MAX_GROWTH_CYCLES = 200;
 
 //drawing
 let DISTANCE_PER_MOVEMENT = 20;
@@ -65,10 +66,12 @@ function LSystem(seed, rules, angle) {
     this.rules = rules;
     this.angle = angle;
 
+
     this.grow = maxLen => {
+        let growthCycle = 0;
         let grownString = this.string;
+
         while (grownString.length < maxLen) {
-            //console.log(grownString);
             this.string = grownString; //only update this.string when we know the grown string is below max length
             let grownStringAry = [];
             for (let char of this.string) {
@@ -79,9 +82,15 @@ function LSystem(seed, rules, angle) {
                 }
             }
             grownString = grownStringAry.join('');
+
             if (grownString == this.string) { //stop trying to grow if it can't anymore (will happen if rules look something like {a: bbb, b: ccc, c: ddd})
                 break;
             }
+
+            if (growthCycle > MAX_GROWTH_CYCLES) { //also stop trying to grow if we've already grown the string a bunch of times (usually system size grows exponentially so it doesn't matter, but sometimes systems grow linearly and can lag everything out)
+                break;
+            }
+            growthCycle ++;
         }
     }
 }
@@ -219,10 +228,8 @@ function tryToCreateRuleMap(start, ruleStrings) {
     let usedChars = new CharSet("[]"); //make sure [ and ] can't be rule keys
     usedChars.addChars(start);
     let allRules = {};
-    let ruleStrsEntries = Array.from(ruleStrings.entries());
-    let numRules = ruleStrings.length;
-    for (let rule = 0; rule < numRules; rule ++) {
-        let [ruleStrIndex, ruleStr] = randChoice(ruleStrsEntries);
+    while (ruleStrings.length > 0) {
+        let ruleStr = ruleStrings.pop();
         let ruleKey = usedChars.randChar();
         if (ruleKey === undefined) { //we ran out of key choices :(
             return undefined; //rule map generation failed
@@ -230,7 +237,6 @@ function tryToCreateRuleMap(start, ruleStrings) {
         allRules[ruleKey] = ruleStr;
         usedChars.banChar(ruleKey);
         usedChars.addChars(ruleStr);
-        ruleStrsEntries.pop(ruleStrIndex);
     }
     return allRules; 
 }
