@@ -1,13 +1,9 @@
 //PROBABLY WANT TO MAKE SLIDERS WIDER/EASIER TO CLICK ON
 
 //MAKE SURE YOUR STRETCH FUNCTION WORKS (I SEEM TO BE ABLE TO CHANGE THE INITIAL POSITION OF THE 4TH SLIDER BY LIKE 1 PIXEL WITHOUT IT GOING OFF OF 5??)
-// CAN MAX AND MIN RULES GO DOWN TO 1? ABOVE 5? THINK ABOUT IT
-//considering changing max rule length default because max 10 or 15 might be nicer than 5
-    //also fade time could go down too maybe... 1000ms default looks nice
+//initial fade time could go down maybe... 1000ms default looks nice
 //would be nice if sliders were grabbable on mobile... but I'm mainly making this for desktop so whatever
-    //on mobile chrome pulling up the menu can extend the page past the canvas... dunno if I can fix it or if its worthwhile
-
-//WHEN YOU PRESS F IN RES YOU GET A TRANSPARENT GUI THAT LOOKS PRETTY DECE... COPY THAT MAYBE? 
+    //on mobile chrome pulling up the menu can extend the page past the canvas... dunno if I can fix it or if its worthwhile 
 
 
 "use strict";
@@ -169,6 +165,7 @@ function createConverterClass(power) {
         let newNum = percentToNum(numAsPercent, newMin, newMax);
         return Math.floor(newNum);
     }
+    
 
     return function(valMin, valMax) {
 
