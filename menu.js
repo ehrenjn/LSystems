@@ -1,11 +1,14 @@
-//HAVE TO CHANGE HOW FADE TIME IS USED IF I WANT TO BE ABLE TO CHANGE IT
 //PROBABLY WANT TO MAKE SLIDERS WIDER/EASIER TO CLICK ON
-//NEED TO MAKE SLIDERS HAVE DEFAULTS
-    //since we're gonna have non linear sliders and stuff we probably just want every mapping to have a locationToVal function as well as a valToLocation function, and then just use valToLocation to calculate the initial... but that valToLocation might be overkill
 
 //MAKE SURE YOUR STRETCH FUNCTION WORKS (I SEEM TO BE ABLE TO CHANGE THE INITIAL POSITION OF THE 4TH SLIDER BY LIKE 1 PIXEL WITHOUT IT GOING OFF OF 5??)
 // CAN MAX AND MIN RULES GO DOWN TO 1? ABOVE 5? THINK ABOUT IT
 //considering changing max rule length default because max 10 or 15 might be nicer than 5
+    //also fade time could go down too maybe... 1000ms default looks nice
+//would be nice if sliders were grabbable on mobile... but I'm mainly making this for desktop so whatever
+    //on mobile chrome pulling up the menu can extend the page past the canvas... dunno if I can fix it or if its worthwhile
+
+//WHEN YOU PRESS F IN RES YOU GET A TRANSPARENT GUI THAT LOOKS PRETTY DECE... COPY THAT MAYBE? 
+
 
 "use strict";
 
@@ -21,12 +24,12 @@ const LinearConverter = createConverterClass(1);
 const SLIDER_MAPPINGS = [
     {
         id: "fadeTimeSlider",
-        min: 10,
-        max: 10000,
-        initial: FADE_TIME_MS,
+        min: 10 * FADE_LOOPS_UNTIL_BLACK,
+        max: 1000 * FADE_LOOPS_UNTIL_BLACK,
+        initial: FADE_TIME_MS * FADE_LOOPS_UNTIL_BLACK,
         units: "ms",
         converter: createConverterClass(4),
-        update: val => FADE_TIME_MS = val
+        update: val => FADE_TIME_MS = Math.floor(val / FADE_LOOPS_UNTIL_BLACK)
     },
     {
         id: "distancePerMovementSlider",

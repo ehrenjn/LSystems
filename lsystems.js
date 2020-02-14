@@ -1,5 +1,3 @@
-//NEED TO GET LINES TO ACTUALLY GO OFF EDGE, THEN LIFT PEN AND START AGAIN ON THE OTHER SIDE FROM 0
-    //MIGHT WANNA TURN MOVEMENTS INTO AN ACTUAL OBJECT AND MAKE ALL PEN MOVEMENT HAPPEN AS A METHOD OF THAT OBJECT
 //NEED TO SMOOTH LINES BY ONLY DRAWING FULL STRAIGHT LINES (no intermediate steps)
     //gets annoying because of wall hits
     //IF I DRAW LINES LIKE THIS THEN DOING A SLOW FADE OUT WILL BE HARD WITH DIFFERENT SIZED LINES...
@@ -23,6 +21,8 @@
 //RN YOU SEEM TO NOT BE USING ANY SQUARE BRACKETS BECAUSE YOU TOOK THEM OUT OF THE LIST OF CHARS BUT ITS LOOKING VERY NICE, SO MAYBE YOU SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE
 //IF ANGLE IS STORED IN THE LSYSTEM THEN SHOULDN'T COLOR BE TOO?
 //MIGHT WANNA PASS AROUND CANVAS AND CONTEXT INSTEAD OF HAVING THEM GLOBAL, IDK (think about it)
+
+//MAYBE EVERY TIME YOU RELOAD THE PAGE YOU SHOULD GET A RANDOM PRESET THAT I LIKE??
 
 
 "use strict";
@@ -52,6 +52,7 @@ let LINE_WIDTH = 2;
 let MS_PER_TURTLE_MOVE = 10;
 let FS_PER_TURTLE_MOVE = 5//2;//5;//50; //number of "F" commands per turtle move
 let FADE_TIME_MS = 100;
+const FADE_LOOPS_UNTIL_BLACK = 34; //number of times we need to fade to make something effectively invisible
 
 resizeCanvas(); //initialize canvas to proper size
 
@@ -423,9 +424,10 @@ async function drawRandomLSystemPath() {
 }
 
 
-function fadeCanvas() {
+function fadeCanvasLoop() {
     CONTEXT.fillStyle = "rgba(0, 0, 0, 0.1)";
     CONTEXT.fillRect(0, 0, CANVAS.width, CANVAS.height);
+    setTimeout(fadeCanvasLoop, FADE_TIME_MS);
 }
 
 
@@ -439,5 +441,5 @@ function resizeCanvas() {
 
 
 drawRandomLSystemPath();
-setInterval(fadeCanvas, FADE_TIME_MS);
+fadeCanvasLoop();
 window.addEventListener('resize', resizeCanvas);
