@@ -1,5 +1,4 @@
 Automatically generates and visualizes random LSystems  
+Click anywhere on the page to bring up a menu to change system generation parameters
 
 Should be live at https://ehrenjn.github.io/LSystems/ unless I broke something  
-**Make sure to fullscreen for optimal viewing**  
-(will eat up a fair amount of cpu and does require an up to date browser)
