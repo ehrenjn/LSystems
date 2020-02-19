@@ -9,6 +9,7 @@
 "use strict";
 
 const MENU = document.getElementById("menu");
+const SAVE_BUTTON = document.getElementById("saveButton");
 
 const SLIDER_ZERO_POSITION = 214; //when slider grip is this far left it's at 0
 const SLIDER_FULL_POSITION = 14;
@@ -22,121 +23,134 @@ const SLIDER_MAPPINGS = [
         id: "fadeTimeSlider",
         min: 10 * FADE_LOOPS_UNTIL_BLACK,
         max: 1000 * FADE_LOOPS_UNTIL_BLACK,
-        initial: FADE_TIME_MS * FADE_LOOPS_UNTIL_BLACK,
+        initial: PARAMETERS.FADE_TIME_MS * FADE_LOOPS_UNTIL_BLACK,
         units: "ms",
         converter: createConverterClass(4),
-        update: val => FADE_TIME_MS = Math.floor(val / FADE_LOOPS_UNTIL_BLACK)
+        update: val => PARAMETERS.FADE_TIME_MS = Math.floor(val / FADE_LOOPS_UNTIL_BLACK),
+        save: "FADE_TIME_MS"
     },
     {
         id: "distancePerMovementSlider",
         min: 1,
         max: 500,
-        initial: DISTANCE_PER_MOVEMENT,
+        initial: PARAMETERS.DISTANCE_PER_MOVEMENT,
         units: "px",
         converter: createConverterClass(4),
-        update: val => DISTANCE_PER_MOVEMENT = val
+        update: val => PARAMETERS.DISTANCE_PER_MOVEMENT = val,
+        save: "DISTANCE_PER_MOVEMENT"
     },
     {
         id: "lineWidthSlider",
         min: 1,
         max: 20,
-        initial: LINE_WIDTH,
+        initial: PARAMETERS.LINE_WIDTH,
         units: "px",
         converter: LinearConverter,
         update: val => {
-            LINE_WIDTH = val;
-            CONTEXT.lineWidth = LINE_WIDTH;
-        }
+            PARAMETERS.LINE_WIDTH = val;
+            CONTEXT.lineWidth = PARAMETERS.LINE_WIDTH;
+        },
+        save: "LINE_WIDTH"
     },
     {
         id: "linesPerMovementSlider",
         min: 1,
         max: 200,
-        initial: FS_PER_TURTLE_MOVE,
+        initial: PARAMETERS.FS_PER_TURTLE_MOVE,
         units: "",
         converter: createConverterClass(2),
-        update: val => FS_PER_TURTLE_MOVE = val
+        update: val => PARAMETERS.FS_PER_TURTLE_MOVE = val,
+        save: "FS_PER_TURTLE_MOVE"
     },
     {
         id: "timePerMovementSlider",
         min: 10,
         max: 1000,
-        initial: MS_PER_TURTLE_MOVE,
+        initial: PARAMETERS.MS_PER_TURTLE_MOVE,
         units: "ms",
         converter: createConverterClass(3),
-        update: val => MS_PER_TURTLE_MOVE = val
+        update: val => PARAMETERS.MS_PER_TURTLE_MOVE = val,
+        save: "MS_PER_TURTLE_MOVE"
     },
     {
         id: "angleRandomnessSlider",
         min: 0,
         max: 100,
-        initial: Math.floor(RANDOM_ANGLE_CHANCE * 100),
+        initial: Math.floor(PARAMETERS.RANDOM_ANGLE_CHANCE * 100),
         units: "%",
         converter: LinearConverter,
-        update: val => RANDOM_ANGLE_CHANCE = val / 100
+        update: val => PARAMETERS.RANDOM_ANGLE_CHANCE = val / 100,
+        save: "RANDOM_ANGLE_CHANCE"
     },
     {
         id: "minSeedSizeSlider",
         min: 1,
         max: 30,
-        initial: MIN_START_LENGTH,
+        initial: PARAMETERS.MIN_START_LENGTH,
         units: "",
         converter: createConverterClass(3),
-        update: val => MIN_START_LENGTH = val
+        update: val => PARAMETERS.MIN_START_LENGTH = val,
+        save: "MIN_START_LENGTH"
     },
     {
         id: "maxSeedSizeSlider",
         min: 1,
         max: 30,
-        initial: MAX_START_LENGTH,
+        initial: PARAMETERS.MAX_START_LENGTH,
         units: "",
         converter: createConverterClass(3),
-        update: val => MAX_START_LENGTH = val
+        update: val => PARAMETERS.MAX_START_LENGTH = val,
+        save: "MAX_START_LENGTH"
     },
     {
         id: "minRulesSlider",
         min: 2,
         max: 5,
-        initial: MIN_RULES,
+        initial: PARAMETERS.MIN_RULES,
         units: "",
         converter: LinearConverter,
-        update: val => MIN_RULES = val
+        update: val => PARAMETERS.MIN_RULES = val,
+        save: "MIN_RULES"
     },
     {
         id: "maxRulesSlider",
         min: 2,
         max: 5,
-        initial: MAX_RULES,
+        initial: PARAMETERS.MAX_RULES,
         units: "",
         converter: LinearConverter,
-        update: val => MAX_RULES = val
+        update: val => PARAMETERS.MAX_RULES = val,
+        save: "MAX_RULES"
     },
     {
         id: "minRuleLengthSlider",
         min: 2,
         max: 30,
-        initial: MIN_RULE_LENGTH,
+        initial: PARAMETERS.MIN_RULE_LENGTH,
         units: "",
         converter: createConverterClass(2),
-        update: val => MIN_RULE_LENGTH = val
+        update: val => PARAMETERS.MIN_RULE_LENGTH = val,
+        save: "MIN_RULE_LENGTH"
     },
     {
         id: "maxRuleLengthSlider",
         min: 2,
         max: 30,
-        initial: MAX_RULE_LENGTH,
+        initial: PARAMETERS.MAX_RULE_LENGTH,
         units: "",
         converter: createConverterClass(2),
-        update: val => MAX_RULE_LENGTH = val
+        update: val => PARAMETERS.MAX_RULE_LENGTH = val,
+        save: "MAX_RULE_LENGTH"
     },
     {
         id: "maxSystemLengthSlider",
         min: 10,
         max: 10000,
-        initial: LSYSTEM_MAX_LENGTH,
+        initial: PARAMETERS.LSYSTEM_MAX_LENGTH,
         units: "",
         converter: createConverterClass(3),
-        update: val => LSYSTEM_MAX_LENGTH = val
+        update: val => PARAMETERS.LSYSTEM_MAX_LENGTH = val,
+        save: "LSYSTEM_MAX_LENGTH"
     }
 ]
 
@@ -227,5 +241,17 @@ CANVAS.onclick = function(clickEvent) {
     MENU.style.top = clickEvent.clientY;
     MENU.hidden = !MENU.hidden;
 }
+
+
+SAVE_BUTTON.onclick = function() {
+    let queryString = "?";
+    for (let mapping of SLIDER_MAPPINGS) {
+        queryString += mapping.save + "=" + PARAMETERS[mapping.save] + '&';
+    }
+    queryString = queryString.substring(0, queryString.length - 1); //remove last '&' for nicer query string
+    history.replaceState(null, "LSystems", queryString);
+}
+
+
 
 setUpSliderMappings();

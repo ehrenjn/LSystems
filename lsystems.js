@@ -15,15 +15,10 @@
 //SHOULD PROBABLY HAVE A POPUP THING BEFORE THE SITE THAT TELLS YOU HOW TO USE IT (maybe it could tell you to fullscreen if I dont fix that?)
 //should have a thing that lets people input their own custom LSystems instead of random ones
 
-//SOMETIMES I SEE A NEW LSYSTEM JUMP SOMEWHERE IN THE MIDDLE OF THE SCREEN INSTEAD OF FOLLOWING OLD ONE?
-    //very high chance that this is just caused by a bunch of closing square brackets at the end (since beginning of old lsystem has already faded away)
-
 //RN YOU SEEM TO NOT BE USING ANY SQUARE BRACKETS BECAUSE YOU TOOK THEM OUT OF THE LIST OF CHARS BUT ITS LOOKING VERY NICE, SO MAYBE YOU SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE
 //IF YOU ADD CHECKBOXES FOR TURNING OFF SQUARE BRACKETS THEN YOU SHOULD ALSO ADD ONE TO TURN OFF FADE
 //IF ANGLE IS STORED IN THE LSYSTEM THEN SHOULDN'T COLOR BE TOO?
 //MIGHT WANNA PASS AROUND CANVAS AND CONTEXT INSTEAD OF HAVING THEM GLOBAL, IDK (think about it)
-
-//MAYBE EVERY TIME YOU RELOAD THE PAGE YOU SHOULD GET A RANDOM PRESET THAT I LIKE??
 
 
 "use strict";
@@ -33,26 +28,32 @@ const CONTEXT = CANVAS.getContext("2d");
 const PI = Math.PI; //just to make this shorter
 
 
-//consts for randomly generating lsystems
-let MIN_RULES = 2;
-let MAX_RULES = 5;
-let MIN_START_LENGTH = 1;
-let MAX_START_LENGTH = 5;
-let MIN_RULE_LENGTH = 2;
-let MAX_RULE_LENGTH = 10;
+//user editable parameters
+let PARAMETERS = {
+
+    //LSystem generation params
+    MIN_RULES: 2,
+    MAX_RULES: 5,
+    MIN_START_LENGTH: 1,
+    MAX_START_LENGTH: 5,
+    MIN_RULE_LENGTH: 2,
+    MAX_RULE_LENGTH: 10,
+    LSYSTEM_MAX_LENGTH: 2000,
+    RANDOM_ANGLE_CHANCE: 0.5,
+
+    //params for drawing
+    DISTANCE_PER_MOVEMENT: 20,
+    LINE_WIDTH: 2,
+    MS_PER_TURTLE_MOVE: 10,
+    FS_PER_TURTLE_MOVE: 5, //number of "F" commands per turtle move
+    FADE_TIME_MS: 100
+}
+
+//consts
 const NON_RANDOM_ANGLES = [20, 30, 36, 45, 60, 90, 135];
-let RANDOM_ANGLE_CHANCE = 0.5;
 const MAX_ANGLE = 179;
 const MIN_ANGLE = 5;
-let LSYSTEM_MAX_LENGTH = 2000;
 const MAX_GROWTH_CYCLES = 200;
-
-//drawing
-let DISTANCE_PER_MOVEMENT = 20;
-let LINE_WIDTH = 2;
-let MS_PER_TURTLE_MOVE = 10;
-let FS_PER_TURTLE_MOVE = 5//2;//5;//50; //number of "F" commands per turtle move
-let FADE_TIME_MS = 100;
 const FADE_LOOPS_UNTIL_BLACK = 34; //number of times we need to fade to make something effectively invisible
 
 resizeCanvas(); //initialize canvas to proper size
@@ -187,7 +188,7 @@ function CharSet(bannedChars) {
 
 function randAngle() {
     let angle;
-    if (chance(RANDOM_ANGLE_CHANCE)) {
+    if (chance(PARAMETERS.RANDOM_ANGLE_CHANCE)) {
         angle = randInt(MIN_ANGLE, MAX_ANGLE);
     } else {
         angle = randChoice(NON_RANDOM_ANGLES);
@@ -199,7 +200,7 @@ function randAngle() {
 function createRandomRuleStrings(numRules) {
     let ruleStrings = [];
     for (let rule = 0; rule < numRules; rule ++) {
-        let ruleLength = randInt(MIN_RULE_LENGTH, MAX_RULE_LENGTH);
+        let ruleLength = randInt(PARAMETERS.MIN_RULE_LENGTH, PARAMETERS.MAX_RULE_LENGTH);
         let newRuleString = randLSystemString(ruleLength);
         ruleStrings.push(newRuleString);
     }
@@ -243,12 +244,12 @@ function tryToCreateRuleMap(start, ruleStrings) {
 
 function randomLSystem() {
     let angle = randAngle();
-    let numRules = randInt(MIN_RULES, MAX_RULES);
+    let numRules = randInt(PARAMETERS.MIN_RULES, PARAMETERS.MIN_RULES);
     let start;
     let ruleMap;
     while (ruleMap === undefined) { //randomly generate rules (and start) until something works
         let ruleStrings = createRandomRuleStrings(numRules);
-        let num_start_chars = randInt(MIN_START_LENGTH, MAX_START_LENGTH);
+        let num_start_chars = randInt(PARAMETERS.MIN_START_LENGTH, PARAMETERS.MAX_START_LENGTH);
         start = randLSystemString(num_start_chars);
         ruleMap = tryToCreateRuleMap(start, ruleStrings);
     }
@@ -261,7 +262,7 @@ function* turtleMoveGenerator() {
     let numFs = 0;
     while (true) {
         let lsys = randomLSystem();
-        lsys.grow(LSYSTEM_MAX_LENGTH);
+        lsys.grow(PARAMETERS.LSYSTEM_MAX_LENGTH);
         let currentStringPosition = 0;
         while (currentStringPosition < lsys.string.length) {
             let nextFPosition = lsys.string.indexOf('F', currentStringPosition);
@@ -275,7 +276,7 @@ function* turtleMoveGenerator() {
                 string: lsys.string.substring(currentStringPosition, nextFPosition + 1),
                 lsystem: lsys
             });
-            if (numFs >= FS_PER_TURTLE_MOVE) {
+            if (numFs >= PARAMETERS.FS_PER_TURTLE_MOVE) {
                 yield currentStrings;
                 currentStrings = [];
                 numFs = 0;
@@ -369,7 +370,7 @@ function drawLSystemSubString(string, turnAngle, initialTurtleState) {
     for (let char of string) {
         switch (char) {
             case 'F':
-                let distanceRemaining = DISTANCE_PER_MOVEMENT;
+                let distanceRemaining = PARAMETERS.DISTANCE_PER_MOVEMENT;
                 let nextMovement = getNextPenMovement(x, y, currentAngle, distanceRemaining);
                 while (nextMovement.length < distanceRemaining) {
                     CONTEXT.lineTo(nextMovement.x, nextMovement.y);
@@ -420,7 +421,7 @@ async function drawRandomLSystemPath() {
             }
             currentTurtleState = drawLSystemSubString(string, lsystem.angle, currentTurtleState);
         }
-        await sleep(MS_PER_TURTLE_MOVE);
+        await sleep(PARAMETERS.MS_PER_TURTLE_MOVE);
     }
 }
 
@@ -428,19 +429,32 @@ async function drawRandomLSystemPath() {
 function fadeCanvasLoop() {
     CONTEXT.fillStyle = "rgba(0, 0, 0, 0.1)";
     CONTEXT.fillRect(0, 0, CANVAS.width, CANVAS.height);
-    setTimeout(fadeCanvasLoop, FADE_TIME_MS);
+    setTimeout(fadeCanvasLoop, PARAMETERS.FADE_TIME_MS);
 }
 
 
 function resizeCanvas() {
     CANVAS.width = window.innerWidth;
     CANVAS.height = window.innerHeight;
-    CONTEXT.lineWidth = LINE_WIDTH;
+    CONTEXT.lineWidth = PARAMETERS.LINE_WIDTH;
     CONTEXT.strokeStyle = randomColor();
 }
 
 
+function loadQueryStringParameters() {
+    let queryString = location.search;
+    let parser = /([^?&]+?)=([\d\.]+)/g;
+    let result = parser.exec(queryString);
+    while (result != null) {
+        let [_, varName, value] = result;
+        PARAMETERS[varName] = Number.parseFloat(value);
+        result = parser.exec(queryString);
+    }
+}
 
+
+
+loadQueryStringParameters();
 drawRandomLSystemPath();
 fadeCanvasLoop();
 window.addEventListener('resize', resizeCanvas);
