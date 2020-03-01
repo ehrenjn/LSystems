@@ -1,9 +1,8 @@
 # Random L-Systems Visualizer
 
+### **[Click here to start the visualization](/lsystems.hmtl)**
 
 ## How to use this site:
-
-**[Click here to start the visualization](/lsystems.hmtl)**
 
 Clicking anywhere on the visualization will bring up a menu with a bunch of sliders you can use to change how the L-Systems are generated. Clicking off the menu will make it disppear. Using the menu you can control the following parameters: 
 
@@ -23,7 +22,7 @@ Clicking anywhere on the visualization will bring up a menu with a bunch of slid
 
 The remaining parameters are explained in the following diagram of a complete L-System:  
 
-![](/howTo.png)
+![](howTo.png)
 
 
 If you want to share your current settings you can click the **_save settings in url_** button at the bottom of the menu and it will change the URL of the page to one that includes all the current parameters.
