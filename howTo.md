@@ -1,28 +1,37 @@
-## How to use this site
+# Random L-Systems Visualizer
 
-[Click here to start the visualization.](/lsystems.hmtl) 
+
+## How to use this site:
+
+**[Click here to start the visualization](/lsystems.hmtl)**
 
 Clicking anywhere on the visualization will bring up a menu with a bunch of sliders you can use to change how the L-Systems are generated. Clicking off the menu will make it disppear. Using the menu you can control the following parameters: 
 
-|                       |                                                    |
-|-----------------------|---------------------------------------------------:|
-|_Fade time_            |The time it takes for a line to completely fade away|
-|_Line length_          |The length of the shortest possible straight line (the distance that the turtle moves when it is told to move forward)|
-|_Line width_           |The width of the lines being drawn                  |
-|_Lines per frame_      |The number of lines that are drawn every frame      |
-|_Time per frame_       |How often a frame is drawn                          |
-|_Angle randomness_     |100% angle randomness means all angles are randomly chosen from between 5° and 180°. 0% angle randomness means all angles are chosen from a pool of around 10 "nice looking" angles (such as 90°, 20°, etc)|
-|_Maximum system length_|The length to grow each system's string before switching to a new system|
+- **_Fade time_**: The time it takes for a line to completely fade away
 
-The remaining parameters are explained in the following diagram:  
+- **_Line length_**: The length of the shortest possible straight line (the distance that the turtle moves when it is told to move forward)
+ 
+- **_Line width_**: The width of the lines being drawn
+
+- **_Lines per frame_**: The number of lines that are drawn every frame
+
+- **_Time per frame_**: How often a frame is drawn
+
+- **_Angle randomness_**: 100% angle randomness means all angles are randomly chosen from between 5° and 180°. 0% angle randomness means all angles are chosen from a pool of around 10 "nice looking" angles (such as 90°, 20°, etc)
+
+- **_Maximum system length_**: The length to grow each system's string before switching to a new system     
+
+The remaining parameters are explained in the following diagram of a complete L-System:  
+
+![](/howTo.png)
 
 
-If you want to share your current settings you can click the save button at the bottom of the menu and it will change the URL of the page to one that includes all the current parameters.
+If you want to share your current settings you can click the **_save settings in url_** button at the bottom of the menu and it will change the URL of the page to one that includes all the current parameters.
 ___
 
 
 
-## A brief explanation of L-Systems
+## A brief explanation of L-Systems:
 
 
 ### Growing an L-System
@@ -55,4 +64,3 @@ First, you come up with an L-System as well as an arbitrary angle, **A**, to ass
 - "]": Pop a position off the stack and move the turtle to that position
 
 Any other characters can be ignored by the turtle.
-___
