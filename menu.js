@@ -30,7 +30,7 @@ const SLIDER_MAPPINGS = [
         save: "FADE_TIME_MS"
     },
     {
-        id: "distancePerMovementSlider",
+        id: "lineLengthSlider",
         min: 1,
         max: 500,
         initial: PARAMETERS.DISTANCE_PER_MOVEMENT,
@@ -53,7 +53,7 @@ const SLIDER_MAPPINGS = [
         save: "LINE_WIDTH"
     },
     {
-        id: "linesPerMovementSlider",
+        id: "linesPerFrameSlider",
         min: 1,
         max: 200,
         initial: PARAMETERS.FS_PER_TURTLE_MOVE,
@@ -63,7 +63,7 @@ const SLIDER_MAPPINGS = [
         save: "FS_PER_TURTLE_MOVE"
     },
     {
-        id: "timePerMovementSlider",
+        id: "timePerFrameSlider",
         min: 10,
         max: 1000,
         initial: PARAMETERS.MS_PER_TURTLE_MOVE,
