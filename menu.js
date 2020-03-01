@@ -1,6 +1,5 @@
 //PROBABLY WANT TO MAKE SLIDERS WIDER/EASIER TO CLICK ON
 
-//MAKE SURE YOUR STRETCH FUNCTION WORKS (I SEEM TO BE ABLE TO CHANGE THE INITIAL POSITION OF THE 4TH SLIDER BY LIKE 1 PIXEL WITHOUT IT GOING OFF OF 5??)
 //initial fade time could go down maybe... 1000ms default looks nice
 //would be nice if sliders were grabbable on mobile... but I'm mainly making this for desktop so whatever
     //on mobile chrome pulling up the menu can extend the page past the canvas... dunno if I can fix it or if its worthwhile 

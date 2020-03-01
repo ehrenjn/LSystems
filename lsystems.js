@@ -1,21 +1,12 @@
-//NEED TO SMOOTH LINES BY ONLY DRAWING FULL STRAIGHT LINES (no intermediate steps)
+//SHOULD SMOOTH LINES BY ONLY DRAWING FULL STRAIGHT LINES (no intermediate steps)
     //gets annoying because of wall hits
-    //IF I DRAW LINES LIKE THIS THEN DOING A SLOW FADE OUT WILL BE HARD WITH DIFFERENT SIZED LINES...
-        //but you could just shrink the line instead of fading it completely I guess? idk
-            //eg instead of drawing a full F movement at a time it would be part of an F movement
-    //OK TURNS OUT 45 DEGREE LINES JUST LOOK FRICKED BECAUSE IM NOT FULL SCREEN BUT OTHER LINES STILL LOOK FRICKED 
-        //its also really good for efficiency
-    //AHHH BUT IDK HOW ID DRAW MULTICOLORED LINES LIKE THIS
-//MAYBE SHOULD BE USING ACTUAL SIZE INSTEAD OF FULL SCREEN SIZE?
-    //dont wanna ruin it on full screen though... maybe check how it looks once you finish the smoothing
-//LOOK INTO Path2D FOR KEEPING TRACK OF PATHS (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
+//COULD LOOK INTO Path2D FOR KEEPING TRACK OF PATHS (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes)
 
 //WOULD IT BE POSSIBLE TO MAKE THE LSYSTEMS THEMSELVES HAVE A COLOR SWITCH INSTRUCTION? 
     //would be annoying because I'd probably want a color stack... but maybe just having an instruction to switch to a complementry color or something would work?
-//SHOULD PROBABLY HAVE A POPUP THING BEFORE THE SITE THAT TELLS YOU HOW TO USE IT (maybe it could tell you to fullscreen if I dont fix that?)
 //should have a thing that lets people input their own custom LSystems instead of random ones
 
-//RN YOU SEEM TO NOT BE USING ANY SQUARE BRACKETS BECAUSE YOU TOOK THEM OUT OF THE LIST OF CHARS BUT ITS LOOKING VERY NICE, SO MAYBE YOU SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE
+//MAYBE SHOULD HAVE A WAY TO GET RID OF SQUARE BRACKETS IN THE FUTURE (looks surprisingly nice without square brackets)
 //IF YOU ADD CHECKBOXES FOR TURNING OFF SQUARE BRACKETS THEN YOU SHOULD ALSO ADD ONE TO TURN OFF FADE
 //IF ANGLE IS STORED IN THE LSYSTEM THEN SHOULDN'T COLOR BE TOO?
 //MIGHT WANNA PASS AROUND CANVAS AND CONTEXT INSTEAD OF HAVING THEM GLOBAL, IDK (think about it)
