@@ -1,222 +1,98 @@
-<head>
 <style>
 body {
-    margin: 0px;
-    overflow: hidden; /* hide scrollbars */
-}
-
-#canvas {
-    width: 100%;
-    height: 100%;
-    background-color: black;
-}
-
-#menu {
-    background-color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    top: 40px;
-    left: 40px;
-    font-family: sans-serif;
-    border-radius: 5px;
+    background: black;
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.7);
+    width: 75%;
+    padding-left: 10%;
+
+    /*the following styling taken from https://gist.github.com/tuzz/3331384*/
+    font-family: Helvetica, arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
-.menu-item {
-    background-color: rgba(0, 0, 0, 0.5);
-    margin: 1px 0px 1px 3px;
-    width: 500px;
-    height: 20px;
-    user-select: none; /*make unhighlightable*/
-    padding-top: 3px;
+a {
+    color: rgb(3, 207, 252);
 }
 
-
-.slider-div {
-    float: right;
-    height: 100%;
+img {
+    max-width: 50%;
+    max-height: 50%;
 }
-
-
-.numbox {
-    display: inline-block;
-}
-
-.slider {
-    background-color: white;
-    width: 206px;
-    height: 5px;
-    display: inline-block;
-    margin: 0px 4px 2px 4px;
-    opacity: 0.5;
-    cursor: pointer;
-    border-radius: 2px;
-}
-
-.slider-grip {
-    width: 6px;
-    height: 14px;
-    background: white;
-    cursor: pointer;
-    display: inline-block;
-    position: relative;
-    top: 2px;
-    right: 214px;
-    border-radius: 2px;
-}
-
-
-.menu-button-item {
-    background-color: rgba(0, 0, 0, 0.5);
-    margin: 1px 0px 1px 3px;
-    width: 500px;
-    height: 28px;
-    user-select: none; /*make unhighlightable*/
-    padding-top: 3px;
-    text-align: center;
-}
-
-.menu-button {
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 5px;
-    font-family: sans-serif;
-    font-size: medium;
-    width: 170px;
-    position: relative;
-    cursor: pointer;
-}
-
-.menu-button:active {
-    background-color: white;
-}
-
-.menu-button:focus {
-    outline:0;
-}
-
 </style>
-</head>
 
 
-<body>
-
-<canvas id="canvas"></canvas>
-<script src="lsystems.js"></script>
+<!--The following HTML was generated using https://www.browserling.com/tools/markdown-to-html-->
 
 
-<div id="menu" hidden>
-    <div class="menu-item">
-        Fade time
-        <div id="fadeTimeSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Line length
-        <div id="lineLengthSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Line width
-        <div id="lineWidthSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Lines per frame
-        <div id="linesPerFrameSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Time per frame
-        <div id="timePerFrameSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Angle randomness
-        <div id="angleRandomnessSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Minimum seed size
-        <div id="minSeedSizeSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Maximum seed size
-        <div id="maxSeedSizeSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Minimum rules per system
-        <div id="minRulesSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Maximum rules per system
-        <div id="maxRulesSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Minimum rule complexity
-        <div id="minRuleLengthSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Maximum rule complexity
-        <div id="maxRuleLengthSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-item">
-        Maximum system length
-        <div id="maxSystemLengthSlider" class="slider-div">
-            <div class="numbox">0</div>
-            <div class="slider"></div>
-            <div class="slider-grip"></div>
-        </div>
-    </div>
-    <div class="menu-button-item">
-        <button id="saveButton" class="menu-button">
-            save settings in url
-        </button>
-    </div>
-</div>
-<script src="menu.js"></script>
+<h1 id="randomlsystemsvisualizer">Random L-Systems Visualizer</h1>
 
-</body>
+<h3 id="clickheretostartthevisualizationlsystemshtml"><strong><a href="lsystems.html">Click here to start the visualization</a></strong></h3>
+
+<h2 id="howtousethissite">How to use this site:</h2>
+
+<p>Clicking anywhere on the visualization will bring up a menu with a bunch of sliders you can use to change how the L-Systems are generated. Clicking off the menu will make it disppear. Using the menu you can control the following parameters: </p>
+
+<ul>
+<li><p><strong><em>Fade time</em></strong>: The time it takes for a line to completely fade away</p></li>
+
+<li><p><strong><em>Line length</em></strong>: The length of the shortest possible straight line (the distance that the turtle moves when it is told to move forward)</p></li>
+
+<li><p><strong><em>Line width</em></strong>: The width of the lines being drawn</p></li>
+
+<li><p><strong><em>Lines per frame</em></strong>: The number of lines that are drawn every frame</p></li>
+
+<li><p><strong><em>Time per frame</em></strong>: How often a frame is drawn</p></li>
+
+<li><p><strong><em>Angle randomness</em></strong>: 100% angle randomness means all angles are randomly chosen from between 5° and 180°. 0% angle randomness means all angles are chosen from a pool of around 10 "nice looking" angles (such as 90°, 20°, etc)</p></li>
+
+<li><p><strong><em>Maximum system length</em></strong>: The length to grow each system's string before switching to a new system     </p></li>
+</ul>
+
+<p>The remaining parameters are explained in the following diagram of a complete L-System:  </p>
+
+<p><img src="howTo.png" alt="" /></p>
+
+<p>If you want to share your current settings you can click the <strong><em>save settings in url</em></strong> button at the bottom of the menu and it will change the URL of the page to one that includes all the current parameters.</p>
+
+<hr />
+
+<h2 id="abriefexplanationoflsystems">A brief explanation of L-Systems:</h2>
+
+<h3 id="growinganlsystem">Growing an L-System</h3>
+
+<p>An L-System is a string rewriting system that can generate fractal and tree like structures. They consist of a <strong>seed</strong> string and a set of <strong>rules</strong> to grow the seed into a more complex string. Each rule operates on a single character of the string, and replaces that character with another string.
+For example, consider the following seed and rules:  </p>
+
+<pre><code>Seed: "abc"  
+Rules:  
+    "a" -&gt; "cc",  
+    "c" -&gt; "ba"  
+</code></pre>
+
+<p>Applying these rules to the seed will yield the string <code>"ccbba"</code>. Now the same rules can be applied to this new string to grow the system even more:  </p>
+
+<p><code>"ccbba"</code> becomes <code>"bababbcc"</code> <br />
+<code>"bababbcc"</code> becomes <code>"bccbccbbbaba"</code> <br />
+etc</p>
+
+<h3 id="visualizinganlsystem">Visualizing an L-System</h3>
+
+<p>L-Systems can be visualized in many different ways, but the most common method involves using a <a href="https://en.wikipedia.org/wiki/Turtle_graphics">turtle</a>. <br />
+First, you come up with an L-System as well as an arbitrary angle, <strong>A</strong>, to associate the L-System with. Then, you grow your L-System string by applying rules to the seed numerous times. To draw the L-System using the turtle you interpret every character of the grown string as an instruction to the turtle. Most L-Systems visualizers (including this one) use the following character set:</p>
+
+<ul>
+<li>"F": Move the turtle forward</li>
+
+<li>"+": Turn the turtle A degrees clockwise</li>
+
+<li>"-": Turn the turtle A degrees counterclockwise</li>
+
+<li>"[": Push the current position of the turtle onto a stack</li>
+
+<li>"]": Pop a position off the stack and move the turtle to that position</li>
+</ul>
+
+<p>Any other characters can be ignored by the turtle.</p>

@@ -1,6 +1,6 @@
 # Random L-Systems Visualizer
 
-### **[Click here to start the visualization](/lsystems.hmtl)**
+### **[Click here to start the visualization](lsystems.html)**
 
 ## How to use this site:
 
