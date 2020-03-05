@@ -2,6 +2,11 @@
 
 ### **[Click here to start the visualization](lsystems.html)**
 
+or click [here](lsystems.html?FADE_TIME_MS=55&DISTANCE_PER_MOVEMENT=5&LINE_WIDTH=1&FS_PER_TURTLE_MOVE=37&MS_PER_TURTLE_MOVE=10&RANDOM_ANGLE_CHANCE=0.5&MIN_START_LENGTH=1&MAX_START_LENGTH=5&MIN_RULES=4&MAX_RULES=5&MIN_RULE_LENGTH=7&MAX_RULE_LENGTH=15&LSYSTEM_MAX_LENGTH=10000) 
+or [here](lsystems.html?FADE_TIME_MS=11&DISTANCE_PER_MOVEMENT=20&LINE_WIDTH=2&FS_PER_TURTLE_MOVE=3&MS_PER_TURTLE_MOVE=10&RANDOM_ANGLE_CHANCE=0.5&MIN_START_LENGTH=1&MAX_START_LENGTH=5&MIN_RULES=2&MAX_RULES=5&MIN_RULE_LENGTH=2&MAX_RULE_LENGTH=10&LSYSTEM_MAX_LENGTH=329) 
+or [here](lsystems.html?FADE_TIME_MS=92&DISTANCE_PER_MOVEMENT=500&LINE_WIDTH=2&FS_PER_TURTLE_MOVE=200&MS_PER_TURTLE_MOVE=10&RANDOM_ANGLE_CHANCE=0.5&MIN_START_LENGTH=1&MAX_START_LENGTH=5&MIN_RULES=2&MAX_RULES=2&MIN_RULE_LENGTH=2&MAX_RULE_LENGTH=2&LSYSTEM_MAX_LENGTH=2000) (SEIZURE WARNING) 
+for some more examples of what can be generated
+
 ## How to use this site:
 
 Clicking anywhere on the visualization will bring up a menu with a bunch of sliders you can use to change how the L-Systems are generated. Clicking off the menu will make it disppear. Using the menu you can control the following parameters: 
